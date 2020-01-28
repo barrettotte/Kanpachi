@@ -1,0 +1,23 @@
+[2020-01-28 11:48:22.275326] FTP connection closed.
+[2020-01-28 11:48:49.218036] IBMi connection(s) closed.
+[2020-01-28 11:49:51.103297] FTP connection to 'DEV400' established.
+[2020-01-28 11:49:51.259187] Executing FTP command 'NOOP'
+[2020-01-28 11:49:51.268177] Executing FTP command 'NOOP'
+[2020-01-28 11:49:51.281131] FTP connection closed.
+[2020-01-28 11:49:51.291131] IBMi connection(s) closed.
+[2020-01-28 11:49:51.292127] IBMi connection(s) closed.
+[2020-01-28 11:50:57.566428] FTP connection to 'DEV400' established.
+[2020-01-28 11:50:57.702444] Executing FTP command 'NOOP'
+[2020-01-28 11:50:57.715440] Executing FTP command 'NOOP'
+[2020-01-28 11:50:57.732429] IBMi connection(s) closed.
+[2020-01-28 11:50:57.734429] IBMi connection(s) closed.
+[2020-01-28 11:52:43.804772] FTP connection to 'DEV400' established.
+[2020-01-28 11:52:43.958401] Executing FTP command 'NOOP'
+[2020-01-28 11:52:43.967722] Executing FTP command 'NOOP'
+[2020-01-28 11:52:43.988724] IBMi connection(s) closed.
+[2020-01-28 11:52:43.989719] IBMi connection(s) closed.
+[2020-01-28 11:53:54.314278] FTP connection to 'DEV400' established.
+[2020-01-28 11:53:54.450750] Executing FTP command 'NOOP'
+[2020-01-28 11:53:54.460751] Executing FTP command 'NOOP'
+[2020-01-28 11:53:54.472739] FTP connection closed.
+[2020-01-28 11:53:54.474730] IBMi connection(s) closed.
