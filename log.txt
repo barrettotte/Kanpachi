@@ -21,3 +21,21 @@
 [2020-01-28 11:53:54.460751] Executing FTP command 'NOOP'
 [2020-01-28 11:53:54.472739] FTP connection closed.
 [2020-01-28 11:53:54.474730] IBMi connection(s) closed.
+[2020-01-28 11:56:21.464459] FTP connection to 'DEV400' established.
+[2020-01-28 11:56:21.590344] Executing FTP command 'NOOP'
+[2020-01-28 11:56:21.598381] Executing FTP command 'NOOP'
+[2020-01-28 11:56:21.612330] FTP connection closed.
+[2020-01-28 11:56:21.614335] IBMi connection(s) closed.
+[2020-01-28 11:56:53.590593] FTP connection to 'DEV400' established.
+[2020-01-28 11:56:58.791163] FTP connection closed.
+[2020-01-28 11:56:58.792166] IBMi connection(s) closed.
+[2020-01-28 11:57:28.852470] FTP connection to 'DEV400' established.
+[2020-01-28 11:57:33.961781] Log in unsuccessful as 'OTTEB'
+[2020-01-28 11:57:33.966813] FTP connection closed.
+[2020-01-28 11:57:33.968778] IBMi connection(s) closed.
+[2020-01-28 12:15:55.278025] FTP connection to 'DEV400' established.
+[2020-01-28 12:15:55.302983] FTP connection closed.
+[2020-01-28 12:15:55.303982] IBMi connection(s) closed.
+[2020-01-28 12:16:51.603978] FTP connection to 'DEV400' established.
+[2020-01-28 12:16:51.632915] FTP connection closed.
+[2020-01-28 12:16:51.633909] 'None' connection(s) closed.

@@ -4,7 +4,7 @@ class Logger():
 
     def __init__(self, file_name='log.txt'):
         self.out_path = os.path.abspath(file_name)
-        self.mkdir_ine(self.out_path)
+        self.mkdir_ine(os.path.dirname(self.out_path))
 
 
     def mkdir_ine(self, dir_path):
