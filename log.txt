@@ -39,3 +39,14 @@
 [2020-01-28 12:16:51.603978] FTP connection to 'DEV400' established.
 [2020-01-28 12:16:51.632915] FTP connection closed.
 [2020-01-28 12:16:51.633909] 'None' connection(s) closed.
+[2020-02-07 12:45:04.126779] FTP: Connection to 'DEV400' established.
+[2020-02-07 12:45:04.128774] DB2: Connection to 'DEV400' established.
+[2020-02-07 12:45:04.159802] FTP: Connection closed.
+[2020-02-07 12:45:04.160808] All IBMi connection(s) closed.
+[2020-02-07 12:45:54.329863] FTP: Connection to 'DEV400' established.
+[2020-02-07 12:45:54.330838] DB2: Connection to 'DEV400' established.
+[2020-02-07 12:45:54.374126] FTP: Connection closed.
+[2020-02-07 12:45:54.375125] All IBMi connection(s) closed.
+[2020-02-07 12:46:31.439187] FTP: Connection to 'DEV400' established.
+[2020-02-07 12:46:31.485895] FTP: Connection closed.
+[2020-02-07 12:46:31.486895] All IBMi connection(s) closed.

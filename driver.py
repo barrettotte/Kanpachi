@@ -21,8 +21,8 @@ def main():
     logger = Logger() # optional inject logger
 
     box = Ibmi('out', logger)
-    box.connect(host)
-    box.login({'user': user, 'password': pwd})
+    box.connect(host, user, pwd)
+    #box.login({'user': user, 'password': pwd})
 
     box.keep_alive()
 
