@@ -12,7 +12,7 @@ def get_credential(config,key):
 
 
 # get config
-with open('../config.json', 'r') as f:
+with open('config.json', 'r') as f:
     config = json.load(f)
     host = get_credential(config, 'host')
     ssh_port = config['ports']['ssh']
@@ -21,24 +21,26 @@ with open('../config.json', 'r') as f:
     pwd  = utils.required_pass()
 
 
-server = RemoteServer(None, host=host, user=user, password=pwd)
-server.connect()
+server = RemoteServer(None, host=host)
+server.connect(user, pwd)
 
 #server.exec_command('ls')
 #server.exec_command("system 'DSPLIBL'")
 #server.exec_command("xyz")
 
+server.keep_alive()
+
 try:
     while True:
         cmd = input('> ')
         if cmd != 'exit':
-            server.exec_command(cmd)
-            break # TODO: testing
+            out, err, status = server.exec_command(cmd)
+            if len(out) > 0: print(out)
+            if len(err) > 0: print(err)
+            print('status: ' + status)
         else:
             print('SSH session ended.')
             break
-except Exception as e:
-    print(e)
 finally:
     server.disconnect()
 
