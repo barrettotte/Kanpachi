@@ -34,5 +34,5 @@
 ## References
 * Install IBMi ODBC driver for Windows - https://github.com/worksofliam/blog/issues/25
 * Pyodbc docs - https://github.com/mkleehammer/pyodbc/wiki
-* pysftp - https://pysftp.readthedocs.io/en/release_0.2.8/cookbook.html
+* Paramiko docs - http://www.paramiko.org/
 

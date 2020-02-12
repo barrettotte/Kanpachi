@@ -10,7 +10,7 @@ def get_credential(config,key):
     return utils.required_input("Enter '{}': ".format(key))
 
 
-with open('config.json', 'r') as f:
+with open('../config.json', 'r') as f:
     config = json.load(f)
     host = get_credential(config, 'host')
     user = get_credential(config, 'user')
