@@ -23,4 +23,8 @@ with open('config.json', 'r') as f:
 # 'C:\\Users\\otteb\\.ssh'
 server = RemoteServer(None, 'DEV400', user=user, password=pwd)
 server.connect()
-server.exec_cmd('hostname')
+
+server.exec_command('ls')
+server.exec_command("system 'DSPLIBL'")
+server.exec_command("xyz")
+
