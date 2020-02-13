@@ -1,9 +1,6 @@
 __pycache__
-node_modules
-
-log.txt
-out/
-config.json
 
 .wakatime-project
 cache
+config.json
+log.txt

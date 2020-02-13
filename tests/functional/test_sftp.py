@@ -1,26 +1,14 @@
 # Testing SFTP
 
-import json, sys, os, getpass
-import utils as utils
+import test_utils
 from RemoteServer import RemoteServer
 
-
-def get_property(config,key):
-    if key in config: 
-        return config[key] 
-    return input("Enter '{}': ".format(key))
-
-with open('config.json', 'r') as f:
-    config = json.load(f)
-    host = get_property(config, 'host')
-    user = get_property(config, 'user')
-    pwd  = getpass.getpass('Enter password: ')
-
+host,user,pwd = test_utils.get_creds()
 
 server = RemoteServer(None, host=host)
-server.connect(user, pwd)
-
 try:
+    server.connect(user, pwd)
+
     if server.keep_alive():
         server.read_file('/home/OTTEB/Hello-IBMi/QRPGLESRC/hellogit.rpgle')
         server.download_file('/home/OTTEB/Hello-IBMi/QRPGLESRC/hellogit.rpgle')
@@ -28,11 +16,10 @@ try:
         
         # NOTES: 
         #   - IBMi source member returns as EBCDIC (IBM039) encoding and as one blob of string
-        #   - In the implementation, check for '/QSYS.LIB' and separate into lines based on member type
+        #   - In the implementation, check for '/QSYS.LIB' and separate into lines based on member type / record length
         server.read_file('/QSYS.LIB/BOLIB.LIB/QRPGLESRC.FILE/FIZZBUZZ.MBR', fallback_codec='IBM039')
-
         server.download_file('/QSYS.LIB/BOLIB.LIB/QRPGLESRC.FILE/FIZZBUZZ.MBR', fallback_codec='IBM039')
-
+except Exception as e:
+    print('Error testing SFTP\n  ' + str(e))
 finally:
     server.disconnect()
-

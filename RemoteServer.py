@@ -52,7 +52,7 @@ class RemoteServer():
                 self.ssh_client.connect(self.host, self.ssh_port, user, pwd, timeout=timeout)
 
                 if not self.keep_alive():
-                    raise Exception("SFTP client could not be created.")
+                    raise Exception('SFTP client could not be created.')
                 self.sftp_client = paramiko.SFTPClient.from_transport(self.ssh_client.get_transport())
             else:
                 raise Exception('SSH Client not initialized.')
@@ -66,7 +66,7 @@ class RemoteServer():
         try:            
             while cmd != 'exit':
                 cmd = input('{}@{} ~> '.format(self.user, self.host))
-                out,err,status = self.exec_command(cmd, timeout)
+                out, err, status = self.exec_command(cmd, timeout)
                 if len(out) > 0:
                     print(out)
                 elif len(err) > 0 and status != 0: 
@@ -79,7 +79,7 @@ class RemoteServer():
 
 
     def exec_command(self, cmd, timeout=20):
-        out, err, status = '','',''
+        out, err, status = '', '', ''
         channel = self.ssh_client.get_transport().open_session()
         try:
             channel.settimeout(timeout)
