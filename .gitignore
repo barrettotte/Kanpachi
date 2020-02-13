@@ -6,3 +6,4 @@ out/
 config.json
 
 .wakatime-project
+cache

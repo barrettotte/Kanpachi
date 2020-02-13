@@ -23,20 +23,8 @@ server.connect(user, pwd)
 server.keep_alive()
 
 try:
-    while True:
-        cmd = input('> ')
-        if cmd != 'exit':
-            out, err, status = server.exec_command(cmd)
-            if len(out) > 0: print(out)
-            if len(err) > 0: print(err)
-            print('status: ' + status)
-        else:
-            print('SSH session ended.')
-            break
-except KeyboardInterrupt:
-    pass 
+    server.open_shell()
 except Exception as e:
-    print('Error occurred during SSH session. ({})'.format(str(e)))
+    print('Error occurred ' + str(e))
 finally:
     server.disconnect()
-

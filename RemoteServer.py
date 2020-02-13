@@ -3,39 +3,28 @@
 import paramiko, socket, os, time
 
 
-# Fix Paramiko decoding error
-# https://stackoverflow.com/questions/34559158/paramiko-1-16-0-readlines-decode-error
-def u_override(s, encoding='utf8'): # cast bytes or unicode to unicode
-    if isinstance(s, bytes):
-        try:
-            return s.decode(encoding)
-        except UnicodeDecodeError:
-            try:
-                return s.decode('windows-1252')
-            except UnicodeDecodeError:
-                return s.decode('ISO-8859-1', errors='ignore')
-    elif isinstance(s, str):
-        return s.encode('utf8')
-    else:
-        raise TypeError("Expected unicode or bytes, got %r" % s)
-
-# Override the module method
-paramiko.py3compat.u = u_override
-
-
 class RemoteServer():
 
-    def __init__(self, ssh_key, host, ssh_port=22, sftp_dir='cache'):
+    def __init__(self, ssh_key, host, **kwargs):
+        opt_args = {
+            'ssh_port': 22, 
+            'sftp_dir': 'cache', 
+            'buffer_size': 8192, 
+            'encoding': 'utf-8'
+        }.update(kwargs)
+
         self.host = host
-        self.ssh_port = ssh_port
+        self.ssh_port = opt_args['ssh_port']
+        self.buffer_size = opt_args['buffer_size']
+        self.encoding = opt_args['encoding']
         self.private_key = paramiko.RSAKey.from_private_key_file(ssh_key) if ssh_key else None
         self.ssh_client = paramiko.SSHClient()
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         
+        if not os.path.exists(opt_args['sftp_dir']):
+            os.makedirs(opt_args['sftp_dir'])
+        self.sftp_dir = os.path.abspath(opt_args['sftp_dir'])
         self.sftp_client = None
-        if not os.path.exists(sftp_dir):
-            os.makedirs(sftp_dir)
-        self.sftp_dir = os.path.abspath(sftp_dir)
 
 
     def __del__(self):
@@ -54,14 +43,14 @@ class RemoteServer():
             sock.close()
 
 
-    def connect(self, user, pwd):
+    def connect(self, user, pwd, timeout=20):
         try:
             if self.ssh_client:
                 if not self.is_port_open(self.host, self.ssh_port):
                     raise Exception("Port '{}' for host '{}' is not open.".format(self.ssh_port, self.host))
                 self.user = user
-                self.ssh_client.connect(self.host, self.ssh_port, user, pwd)
-                
+                self.ssh_client.connect(self.host, self.ssh_port, user, pwd, timeout=timeout)
+
                 if not self.keep_alive():
                     raise Exception("SFTP client could not be created.")
                 self.sftp_client = paramiko.SFTPClient.from_transport(self.ssh_client.get_transport())
@@ -71,59 +60,76 @@ class RemoteServer():
             raise Exception("Authentication failed when connecting to '{}'.".format(self.host))
 
 
-    def exec_command(self, cmd):
+    def open_shell(self, timeout=20):
+        cmd = ''
+        shell = self.ssh_client.invoke_shell()
+        try:            
+            while cmd != 'exit':
+                cmd = input('{}@{} ~> '.format(self.user, self.host))
+                out,err,status = self.exec_command(cmd, timeout)
+                if len(out) > 0:
+                    print(out)
+                elif len(err) > 0 and status != 0: 
+                    print(err)
+        except Exception as e:
+            raise Exception("Error occurred in interactive shell\n  '{}'.".format(str(e)))
+        finally:
+            shell.close()
+            print('Interactive shell to {} closed.'.format(self.host))
+
+
+    def exec_command(self, cmd, timeout=20):
         out, err, status = '','',''
+        channel = self.ssh_client.get_transport().open_session()
         try:
-            channel = self.ssh_client.get_transport().open_session()
+            channel.settimeout(timeout)
             channel.exec_command(cmd)
             time.sleep(0.5)
             while True:
                 if channel.recv_ready():
-                    out += channel.recv(4096).decode('utf-8')
+                    out += channel.recv(self.buffer_size).decode(self.encoding)
                 if channel.recv_stderr_ready():
-                    err += channel.recv_stderr(4096).decode('utf-8')
+                    err += channel.recv_stderr(self.buffer_size).decode(self.encoding)
                 if channel.exit_status_ready():
                     status = channel.recv_exit_status()
                     break
-            channel.close()
         except paramiko.SSHException as ssh_error:
             raise Exception("SSH exception occurred {}\n  While executing command '{}'".format(str(ssh_error), cmd))
+        finally:
+            channel.close()
         return (''.join(out), ''.join(err), str(status))
 
     
-    def download_file(self, remote_path, local_path=None, timeout=20):
+    def download_file(self, remote_path, local_path=None, fallback_codec='windows-1252'):
         try:
-            if not local_path:
-                split = remote_path.split('/')
-                out_dir = os.path.abspath(self.sftp_dir + os.sep.join(split[:-1]))
-            else:
-                split = local_path.split('/')
-                out_dir = os.path.abspath(os.sep.join(split[:-1]))
-            out_file = split[-1]
-
+            local_path = self.sftp_dir + os.sep + remote_path if not local_path else local_path
+            split_path = local_path.replace('/', os.sep).replace('\\', os.sep).split(os.sep)
+            out_dir = os.path.abspath(os.sep.join(split_path[:-1]))
+            
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
-
-            content = self.read_file(remote_path, timeout=timeout)
-            print('writing ' + out_dir + os.sep + out_file)
-            with open(os.path.abspath(out_dir) + os.sep + out_file, 'w+', encoding='utf8') as f:
+            content = self.read_file(remote_path, fallback_codec=fallback_codec)
+            with open(os.path.abspath(out_dir) + os.sep + split_path[-1], 'w+', encoding=self.encoding) as f:
                 f.write(content)
-        except Exception:
-            raise Exception("Error occurred downloading file '{}'".format(remote_path))
+        except Exception as e:
+            raise Exception("Error occurred downloading file '{}'.\n  {}".format(remote_path, str(e)))
         return content
 
 
-    def read_file(self, path, timeout=20):
+    def read_file(self, path, fallback_codec='windows-1252'):
+        content = []
+        remote_file = self.sftp_client.open(path, 'rb')
         try:
-            content = ''
-            remote_file = self.sftp_client.open(path, 'rb')
             for line in remote_file:
-                #content += line.decode('utf8', 'ignore')
-                #print(line)
-                content += line.decode('utf-8', 'ignore')
-        except Exception:
-            raise Exception("Error occurred opening file '{}'.".format(path))
-        return content
+                try:
+                    content.append(line.decode(self.encoding).rstrip('\n\r'))
+                except UnicodeDecodeError:
+                    content.append(line.decode(fallback_codec).rstrip('\n\r'))
+        except Exception as e:
+            raise Exception("Error occurred opening file '{}'.\n  {}".format(path, str(e)))
+        finally:
+            remote_file.close()
+        return '\n'.join(content)
 
     
     def keep_alive(self):
@@ -148,6 +154,5 @@ class RemoteServer():
             self.ssh_client.close()
         if self.sftp_client:
             self.sftp_client.close()
-        self.host = None
-        self.user = None
+        self.host, self.user = None, None
 

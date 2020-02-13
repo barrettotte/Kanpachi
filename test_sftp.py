@@ -22,10 +22,17 @@ server.connect(user, pwd)
 
 try:
     if server.keep_alive():
-        print(server.read_file('/home/OTTEB/Hello-IBMi/QRPGLESRC/hellogit.rpgle'))
+        server.read_file('/home/OTTEB/Hello-IBMi/QRPGLESRC/hellogit.rpgle')
         server.download_file('/home/OTTEB/Hello-IBMi/QRPGLESRC/hellogit.rpgle')
         server.download_file('/home/OTTEB/Hello-IBMi/QRPGLESRC/hellogit.rpgle', 'cache/hello.rpgle')
-        print(server.read_file('/QSYS.LIB/BOLIB.LIB/QRPGLESRC.FILE/FIZZBUZZ.MBR'))
+        
+        # NOTES: 
+        #   - IBMi source member returns as EBCDIC (IBM039) encoding and as one blob of string
+        #   - In the implementation, check for '/QSYS.LIB' and separate into lines based on member type
+        server.read_file('/QSYS.LIB/BOLIB.LIB/QRPGLESRC.FILE/FIZZBUZZ.MBR', fallback_codec='IBM039')
+
+        server.download_file('/QSYS.LIB/BOLIB.LIB/QRPGLESRC.FILE/FIZZBUZZ.MBR', fallback_codec='IBM039')
+
 finally:
     server.disconnect()
 
