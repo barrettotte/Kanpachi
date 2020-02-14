@@ -1,7 +1,7 @@
 # Testing SFTP
 
-import test_utils
-from RemoteServer import RemoteServer
+import test_utils as test_utils
+from common.remote_server import RemoteServer
 
 host,user,pwd = test_utils.get_creds()
 
@@ -19,6 +19,7 @@ try:
         #   - In the implementation, check for '/QSYS.LIB' and separate into lines based on member type / record length
         server.read_file('/QSYS.LIB/BOLIB.LIB/QRPGLESRC.FILE/FIZZBUZZ.MBR', fallback_codec='IBM039')
         server.download_file('/QSYS.LIB/BOLIB.LIB/QRPGLESRC.FILE/FIZZBUZZ.MBR', fallback_codec='IBM039')
+        
 except Exception as e:
     print('Error testing SFTP\n  ' + str(e))
 finally:

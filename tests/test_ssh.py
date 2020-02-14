@@ -1,7 +1,7 @@
 # Test SSH connection and executing commands
 
-import test_utils
-from RemoteServer import RemoteServer
+import test_utils as test_utils
+from common.remote_server import RemoteServer
 
 host,user,pwd = test_utils.get_creds()
 

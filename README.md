@@ -9,17 +9,9 @@
 
 
 ## To Do
-* Replace FTP with SFTP
 * Unit testing on IBMi object
 * File caching logic? Sqlite?
-* Flask API over IBMi object
-  * GET **/lib** - Get list of libraries
-  * GET **/lib/{lib}** - Get library data
-    * list of objects and relevant object description info
-  * GET **/lib/{lib}/spf/{spf}** - Get source physical file data
-    * list of members and relevant object description info
-  * GET **/lib/{lib}/spf/{spf}/mbr/{mbr}** - Get source member data
-    * source code and relevant object description info
+* Flask API for IFS and source members
 * IBMi object
   * Login
   * Get list of libraries

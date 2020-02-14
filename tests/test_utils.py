@@ -2,7 +2,6 @@
 
 import json, sys, os, getpass
 
-
 def get_creds():
     with open(os.path.abspath('config.json'), 'r') as f:
         config = json.load(f)
