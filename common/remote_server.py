@@ -2,7 +2,6 @@
 
 import paramiko, socket, os, time
 
-
 class RemoteServer():
 
     def __init__(self, ssh_key, host, **kwargs):
@@ -155,4 +154,23 @@ class RemoteServer():
         if self.sftp_client:
             self.sftp_client.close()
         self.host, self.user = None, None
+
+
+    # TODO:
+    #   chdir(path)                     change directory
+    #   getcwd()                        get current working directory
+    #   get_channel()                   get ssh channel
+    #   listdir(path)                   list containing directory list
+    #   mkdir(path, mode)               make directory
+    #   get(remotepath, localpath)      copy file to local
+    #   put(localpath, remotepath)      copy file to remote
+    #   remove(path)                    remove file
+    #   rename(oldpath, newpath)        rename file/folder
+    #   rmdir(path)                     remove folder
+    #   stat(path)                      list statistics of file
+
+
+    # TODO: If speed issues downloading
+    #  consider using http://docs.paramiko.org/en/stable/api/sftp.html#paramiko.sftp_file.SFTPFile.prefetch
+    #  in a thread or something.
 

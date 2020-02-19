@@ -1,10 +1,13 @@
-import os, datetime
+# Basic wrapper over logging module
+
+import os, datetime, logging
 
 class Logger():
 
-    def __init__(self, file_name='log.txt'):
+    def __init__(self, file_name='temp.log'):
         self.out_path = os.path.abspath(file_name)
         self.mkdir_ine(os.path.dirname(self.out_path))
+        logging.basicConfig(filename=self.out_path, format='%(asctime)s%(levelname)s:%(message)s')
 
 
     def mkdir_ine(self, dir_path):
@@ -12,16 +15,11 @@ class Logger():
             os.makedirs(dir_path)
 
 
-    def log(self, content, file_path='./log.txt', to_console=True):
+    def log(self, msg, level='INFO', to_console=True):
         try:
-            if to_console: 
-                print(content)
-            with open(file_path, 'a+') as f:
-                f.write("[{}] {}\n".format(self.get_timestamp(), content))
+            if to_console:
+                print(msg)
+            logging.log(level=logging._nameToLevel[level.upper()], msg=msg)
         except Exception as e:
             print("Could not write to log.\n  {}".format(e))
-
-
-    def get_timestamp(self):
-        return str(datetime.datetime.now())
 
