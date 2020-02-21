@@ -156,21 +156,22 @@ class RemoteServer():
         self.host, self.user = None, None
 
 
-    # TODO:
-    #   chdir(path)                     change directory
-    #   getcwd()                        get current working directory
-    #   get_channel()                   get ssh channel
-    #   listdir(path)                   list containing directory list
-    #   mkdir(path, mode)               make directory
-    #   get(remotepath, localpath)      copy file to local
-    #   put(localpath, remotepath)      copy file to remote
-    #   remove(path)                    remove file
-    #   rename(oldpath, newpath)        rename file/folder
-    #   rmdir(path)                     remove folder
-    #   stat(path)                      list statistics of file
+    # -------------------------------TO IMPLEMENT--------------------------------------
+    #   chdir(path)                        change directory
+    #   getcwd()                           get current working directory
+    #   get_channel()                      get ssh channel
+    #   listdir(path)                      list containing directory list
+    #   mkdir(path, mode)                  make directory
+    #   get(remotepath, localpath)         copy file to local
+    #   put(localpath, remotepath)         copy file to remote
+    #   remove(path)                       remove file
+    #   rename(oldpath, newpath)           rename file/folder
+    #   rmdir(path)                        remove folder
+    #   stat(path)                         list statistics of file
+    # --------------------------------------------------------------------------------
 
 
-    # TODO: If speed issues downloading
-    #  consider using http://docs.paramiko.org/en/stable/api/sftp.html#paramiko.sftp_file.SFTPFile.prefetch
-    #  in a thread or something.
+    # If speed issues downloading file contents:
+    #   Consider using http://docs.paramiko.org/en/stable/api/sftp.html#paramiko.sftp_file.SFTPFile.prefetch
+    #     in a thread or something.
 
