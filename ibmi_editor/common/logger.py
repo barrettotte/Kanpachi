@@ -1,6 +1,6 @@
 # Basic wrapper over logging module
 
-import os, datetime, logging
+import os, datetime#, logging
 
 class Logger():
 

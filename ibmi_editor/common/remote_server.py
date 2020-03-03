@@ -72,9 +72,6 @@ class RemoteServer():
                 self.logger.logged_raise('SSH Client not initialized.')
         except paramiko.AuthenticationException:
             self.logger.logged_raise("Authentication failed when connecting to '{}'.".format(self.host))
-        #except paramiko.SSHException as ssh_e:
-        #    self.logger.logged_raise("SSH Exception occurred while attempting to connect to '{}'. \n"
-        #        .format(self.host), ssh_e)
         # Probably will need additional catches...
 
 
@@ -171,7 +168,7 @@ class RemoteServer():
         return False
 
 
-    # TODO: log disconnect
+
     def disconnect(self):
         if hasattr(self, 'logger') and self.logger:
             del self.logger
@@ -179,7 +176,7 @@ class RemoteServer():
             try:
                 self.sftp_client.close()
             except TypeError:
-                pass # TODO: write your own logger, this is stupid
+                pass # TODO: write your own logger, this is beyond stupid
         if hasattr(self, 'ssh_client') and self.ssh_client:
             self.ssh_client.close()
         self.host, self.user = None, None
