@@ -173,10 +173,7 @@ class RemoteServer():
         if hasattr(self, 'logger') and self.logger:
             del self.logger
         if hasattr(self, 'sftp_client') and self.sftp_client:
-            try:
-                self.sftp_client.close()
-            except TypeError:
-                pass # TODO: write your own logger, this is beyond stupid
+            self.sftp_client.close()
         if hasattr(self, 'ssh_client') and self.ssh_client:
             self.ssh_client.close()
         self.host, self.user = None, None
