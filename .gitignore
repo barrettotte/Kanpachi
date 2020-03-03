@@ -4,3 +4,4 @@ __pycache__
 cache
 config.json
 log.txt
+*.log

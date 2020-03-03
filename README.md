@@ -1,5 +1,8 @@
 # IBMi-Editor-API
 
+Pet project: Making an editor API for IBMi. 
+I have no hopes of this ever being usable by other people.
+
 
 ## Project Phases
 1. Viewing source
@@ -8,19 +11,12 @@
 4. Editing and compiling source
 
 
-## To Do
-* Unit testing on IBMi object
-* File caching logic? Sqlite?
-* Flask API for IFS and source members
-* IBMi object
-  * Login
-  * Get list of libraries
-  * Get list of PF-SRC from each library
-  * Get list of members in each SRCPF
-  * Get source of a member (only when requested)
-  * Get list of PF-DTA/LF from library
-  * Gen SQL method
-  * FTP handling
+## Commands
+* Run a test file ```python3 -m tests.test_xyz```
+
+
+## Misc
+* Fix "Error reading SSH protocol banner" in remote_server.py
 
 
 ## References

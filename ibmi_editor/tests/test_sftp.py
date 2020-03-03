@@ -1,6 +1,6 @@
 # Testing SFTP
 
-import test_utils as test_utils
+from . import test_utils as test_utils
 from common.remote_server import RemoteServer
 
 host,user,pwd = test_utils.get_creds()

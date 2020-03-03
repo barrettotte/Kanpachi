@@ -1,29 +1,38 @@
 # Connect to remote server with SSH and SFTP
 
 import paramiko, socket, os, time
+from common.logger import Logger
 
 class RemoteServer():
 
     def __init__(self, ssh_key, host, **kwargs):
         opt_args = {
-            'ssh_port': 22, 
-            'sftp_dir': 'cache', 
-            'buffer_size': 8192, 
-            'encoding': 'utf-8'
-        }.update(kwargs)
-
-        self.host = host
+            'ssh_port': 22,
+            'buffer_size': 8192,
+            'encoding': 'utf-8',
+            'banner_timeout': 1000,
+            'sftp_dir': 'cache',
+            'log_name': 'remote_server.log'
+        }
+        opt_args.update(kwargs)
         self.ssh_port = opt_args['ssh_port']
         self.buffer_size = opt_args['buffer_size']
         self.encoding = opt_args['encoding']
+        self.banner_timeout = opt_args['banner_timeout']
+        self.sftp_dir = opt_args['sftp_dir']
+
+        self.host = host
         self.private_key = paramiko.RSAKey.from_private_key_file(ssh_key) if ssh_key else None
         self.ssh_client = paramiko.SSHClient()
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         
-        if not os.path.exists(opt_args['sftp_dir']):
-            os.makedirs(opt_args['sftp_dir'])
-        self.sftp_dir = os.path.abspath(opt_args['sftp_dir'])
+        if not os.path.exists(self.sftp_dir):
+            self.logger.log("Path '{}' does not exist. Creating directory...".format(self.sftp_dir))
+            os.makedirs(self.sftp_dir)
+        self.sftp_dir = os.path.abspath(self.sftp_dir)
         self.sftp_client = None
+
+        self.logger = Logger()
 
 
     def __del__(self):
@@ -46,35 +55,47 @@ class RemoteServer():
         try:
             if self.ssh_client:
                 if not self.is_port_open(self.host, self.ssh_port):
-                    raise Exception("Port '{}' for host '{}' is not open.".format(self.ssh_port, self.host))
+                    self.logged_raise("Port '{}' for host '{}' is not open.".format(self.ssh_port, self.host))
                 self.user = user
-                self.ssh_client.connect(self.host, self.ssh_port, user, pwd, timeout=timeout)
+                self.ssh_client.connect(self.host, self.ssh_port, user, pwd, 
+                    timeout=timeout, banner_timeout=self.banner_timeout)
 
                 if not self.keep_alive():
-                    raise Exception('SFTP client could not be created.')
-                self.sftp_client = paramiko.SFTPClient.from_transport(self.ssh_client.get_transport())
+                    self.logger.logged_raise('SFTP client could not be created.')
+                
+                transport = self.ssh_client.get_transport()
+                transport.banner_timeout = self.banner_timeout
+                self.sftp_client = paramiko.SFTPClient.from_transport(transport)
+
+                self.logger.log("Successfully connected to '{}' as user '{}'".format(self.host, self.user))
             else:
-                raise Exception('SSH Client not initialized.')
+                self.logger.logged_raise('SSH Client not initialized.')
         except paramiko.AuthenticationException:
-            raise Exception("Authentication failed when connecting to '{}'.".format(self.host))
+            self.logger.logged_raise("Authentication failed when connecting to '{}'.".format(self.host))
+        #except paramiko.SSHException as ssh_e:
+        #    self.logger.logged_raise("SSH Exception occurred while attempting to connect to '{}'. \n"
+        #        .format(self.host), ssh_e)
+        # Probably will need additional catches...
 
 
     def open_shell(self, timeout=20):
         cmd = ''
         shell = self.ssh_client.invoke_shell()
+        prompt = '{}@{} ~> '.format(self.user, self.host)
         try:            
             while cmd != 'exit':
-                cmd = input('{}@{} ~> '.format(self.user, self.host))
+                cmd = input(prompt)
                 out, err, status = self.exec_command(cmd, timeout)
+                self.logger.log(prompt + cmd, to_console=False)
                 if len(out) > 0:
                     print(out)
                 elif len(err) > 0 and status != 0: 
                     print(err)
         except Exception as e:
-            raise Exception("Error occurred in interactive shell\n  '{}'.".format(str(e)))
+            self.logged_raise("Unexpected error occurred in interactive shell.", e)
         finally:
             shell.close()
-            print('Interactive shell to {} closed.'.format(self.host))
+            self.logger.log('Interactive shell to {} closed.'.format(self.host))
 
 
     def exec_command(self, cmd, timeout=20):
@@ -93,7 +114,8 @@ class RemoteServer():
                     status = channel.recv_exit_status()
                     break
         except paramiko.SSHException as ssh_error:
-            raise Exception("SSH exception occurred {}\n  While executing command '{}'".format(str(ssh_error), cmd))
+            self.logger.logged_raise("SSH exception occurred {}\n  While executing command '{}'"
+                .format(str(ssh_error), cmd))
         finally:
             channel.close()
         return (''.join(out), ''.join(err), str(status))
@@ -111,7 +133,7 @@ class RemoteServer():
             with open(os.path.abspath(out_dir) + os.sep + split_path[-1], 'w+', encoding=self.encoding) as f:
                 f.write(content)
         except Exception as e:
-            raise Exception("Error occurred downloading file '{}'.\n  {}".format(remote_path, str(e)))
+            self.logger.logged_raise("Error occurred downloading file '{}'".format(remote_path), e)
         return content
 
 
@@ -125,7 +147,7 @@ class RemoteServer():
                 except UnicodeDecodeError:
                     content.append(line.decode(fallback_codec).rstrip('\n\r'))
         except Exception as e:
-            raise Exception("Error occurred opening file '{}'.\n  {}".format(path, str(e)))
+            self.logger.logged_raise("Error occurred opening file '{}'.".format(path), 'ERROR', e)
         finally:
             remote_file.close()
         return '\n'.join(content)
@@ -133,6 +155,7 @@ class RemoteServer():
     
     def keep_alive(self):
         transport = self.ssh_client.get_transport()
+        # TODO: Try multiple times 1-3 ?
         if transport is not None:
             try:
                 transport.send_ignore()
@@ -148,12 +171,19 @@ class RemoteServer():
         return False
 
 
+    # TODO: log disconnect
     def disconnect(self):
-        if self.ssh_client:
+        if hasattr(self, 'logger') and self.logger:
+            del self.logger
+        if hasattr(self, 'sftp_client') and self.sftp_client:
+            try:
+                self.sftp_client.close()
+            except TypeError:
+                pass # TODO: write your own logger, this is stupid
+        if hasattr(self, 'ssh_client') and self.ssh_client:
             self.ssh_client.close()
-        if self.sftp_client:
-            self.sftp_client.close()
         self.host, self.user = None, None
+
 
 
     # -------------------------------TO IMPLEMENT--------------------------------------
