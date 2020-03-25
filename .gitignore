@@ -5,3 +5,8 @@ cache
 config.json
 log.txt
 *.log
+
+bin/
+obj/
+out/
+.vscode/
