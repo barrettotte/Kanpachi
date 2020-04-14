@@ -1,12 +1,11 @@
-﻿using System;
+﻿using System.Text;
 using IBMi.Lib;
 
-namespace IBMi.CLI
-{
-    class Program
-    {
+namespace IBMi.CLI{
+    class Program{
+        
         static void Main(string[] args){
-            SshTest test = new SshTest();
+            ClientTest test = new ClientTest();
             test.Test();
         }
     }
