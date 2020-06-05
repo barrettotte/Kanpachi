@@ -20,7 +20,7 @@ namespace IBMi.Lib{
                 ibmi.Connect();
                 
                 // Test SFTP
-                using(Stream fs = File.Create(Path.GetFullPath(@"./hello.rpgle"))){
+                using(Stream fs = File.Create(Path.GetFullPath("./hello.rpgle"))){
                     Console.WriteLine("Downloading '{0}'...", rpgle);
                     ibmi.SftpClient.DownloadFile(rpgle, fs);
                 }
@@ -28,7 +28,6 @@ namespace IBMi.Lib{
                 // Test SSH
                 var cmd = ibmi.SshClient.RunCommand("system 'DSPLIBL'");
                 Console.WriteLine(cmd.Result);
-
 
                 // Test DB2
                 // TODO: make a SQL query runner?
@@ -45,7 +44,6 @@ namespace IBMi.Lib{
                     Console.Write(col + ":");
                 }
                 Console.WriteLine();
-
                 while(dbReader.Read()){
                     for(int i = 0; i < colCount; i++){
                         object obj = dbReader.GetValue(i);
@@ -56,7 +54,6 @@ namespace IBMi.Lib{
                 }
                 dbReader.Close();
                 sqlCmd.Dispose();
-
 
                 ibmi.Disconnect();
             }
