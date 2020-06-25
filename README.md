@@ -1,4 +1,6 @@
-## IBMi-Editor-API
+## IBMi-Editor-CLI
+
+A basic CLI to interact with IBMi
 
 
 ## ODBC for IBMi on Linux
@@ -8,7 +10,6 @@
 
 
 ## References
-* SSH.NET - https://github.com/sshnet/SSH.NET
-* Encoding - https://docs.microsoft.com/en-us/dotnet/api/system.text.encoding?view=netframework-4.8
-
-* VS Code NuGet Package Manager - https://marketplace.visualstudio.com/items?itemName=jmrog.vscode-nuget-package-manager
+* [SSH.NET](https://github.com/sshnet/SSH.NET)
+* [System.Text.Encoding](https://docs.microsoft.com/en-us/dotnet/api/system.text.encoding?view=netframework-4.8)
+* [VS Code NuGet Package Manager](https://marketplace.visualstudio.com/items?itemName=jmrog.vscode-nuget-package-manager)
