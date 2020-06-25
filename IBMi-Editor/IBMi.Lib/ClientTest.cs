@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Security;
 using IBMi.Lib.Client;
-using System.Text;
 
 using IBMi.Lib.Config;
 
