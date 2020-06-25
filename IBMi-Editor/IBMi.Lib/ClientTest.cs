@@ -17,42 +17,45 @@ namespace IBMi.Lib{
             using(var ibmi = new IBMiClient(conn)){
                 Console.WriteLine("Connecting to {0} as {1}...", conn.Host, conn.User);
                 ibmi.Connect();
-                
+
                 // Test SFTP
-                using(Stream fs = File.Create(Path.GetFullPath("./hello.rpgle"))){
-                    Console.WriteLine("Downloading '{0}'...", rpgle);
-                    ibmi.SftpClient.DownloadFile(rpgle, fs);
-                }
+                // using(Stream fs = File.Create(Path.GetFullPath("./hello.rpgle"))){
+                //     Console.WriteLine("Downloading '{0}'...", rpgle);
+                //     ibmi.SftpClient.DownloadFile(rpgle, fs);
+                // }
+
+                // Test QSYS.LIB SFTP
+                ibmi.Download("/QSYS.LIB/OTTEB1.LIB/QRPGSRC.FILE/HELLO.MBR", Path.GetFullPath("./HELLO.rpg"));
 
                 // Test SSH
-                var cmd = ibmi.SshClient.RunCommand("system 'DSPLIBL'");
-                Console.WriteLine(cmd.Result);
+                // var cmd = ibmi.SshClient.RunCommand("system 'DSPLIBL'");
+                // Console.WriteLine(cmd.Result);
 
                 // Test DB2
                 // TODO: make a SQL query runner?
-                var sqlCmd = ibmi.Db2Conn.CreateCommand();
-                sqlCmd.CommandText = @"
-                    SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_PARTITION, SOURCE_TYPE
-                    FROM QSYS2.SYSPARTITIONSTAT WHERE TABLE_SCHEMA = 'OTTEB1'
-                    ORDER BY TABLE_PARTITION";
-                var dbReader = sqlCmd.ExecuteReader();
+                // var sqlCmd = ibmi.Db2Conn.CreateCommand();
+                // sqlCmd.CommandText = @"
+                //     SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_PARTITION, SOURCE_TYPE
+                //     FROM QSYS2.SYSPARTITIONSTAT WHERE TABLE_SCHEMA = 'OTTEB1'
+                //     ORDER BY TABLE_PARTITION";
+                // var dbReader = sqlCmd.ExecuteReader();
 
-                int colCount = dbReader.FieldCount;
-                for(int i = 0; i < colCount; i++){
-                    String col = dbReader.GetName(i);
-                    Console.Write(col + ":");
-                }
-                Console.WriteLine();
-                while(dbReader.Read()){
-                    for(int i = 0; i < colCount; i++){
-                        object obj = dbReader.GetValue(i);
-                        String col = (obj == null ? "NULL" : obj.ToString());
-                        Console.Write(col + ",");
-                    }
-                    Console.WriteLine();
-                }
-                dbReader.Close();
-                sqlCmd.Dispose();
+                // int colCount = dbReader.FieldCount;
+                // for(int i = 0; i < colCount; i++){
+                //     String col = dbReader.GetName(i);
+                //     Console.Write(col + ":");
+                // }
+                // Console.WriteLine();
+                // while(dbReader.Read()){
+                //     for(int i = 0; i < colCount; i++){
+                //         object obj = dbReader.GetValue(i);
+                //         String col = (obj == null ? "NULL" : obj.ToString());
+                //         Console.Write(col + ",");
+                //     }
+                //     Console.WriteLine();
+                // }
+                // dbReader.Close();
+                // sqlCmd.Dispose();
 
                 ibmi.Disconnect();
             }
