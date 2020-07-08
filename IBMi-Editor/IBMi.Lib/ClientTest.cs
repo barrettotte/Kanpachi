@@ -11,7 +11,6 @@ namespace IBMi.Lib{
     public class ClientTest{
 
         public void Test(){
-            string rpgle = "/home/OTTEB/hello-IBMi/src/hellogit.rpgle";
             var conn = new IBMiConnection(GetCredentials("PUB400.COM", "OTTEB"), 2222);
             
             using(var ibmi = new IBMiClient(conn)){
@@ -26,6 +25,8 @@ namespace IBMi.Lib{
 
                 // Test QSYS.LIB SFTP
                 ibmi.Download("/QSYS.LIB/OTTEB1.LIB/QRPGSRC.FILE/HELLO.MBR", Path.GetFullPath("./HELLO.rpg"));
+                //ibmi.Download("/home/OTTEB/hello-IBMi/src/hellogit.rpgle", Path.GetFullPath("./hello.rpgle"));
+                //ibmi.Download("/QSYS.LIB/OTTEB1.LIB/QRPGLESRC.FILE/ANILIST.MBR", Path.GetFullPath("./anilist.sqlrpgle"));
 
                 // Test SSH
                 // var cmd = ibmi.SshClient.RunCommand("system 'DSPLIBL'");

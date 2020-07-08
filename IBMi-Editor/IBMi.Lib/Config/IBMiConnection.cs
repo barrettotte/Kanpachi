@@ -8,7 +8,7 @@ namespace IBMi.Lib.Config{
 
         public const int DFT_SSH_PORT = 22;
         public const int DFT_CONNECT_ATTEMPTS = 5;
-        public const double DFT_TIMEOUT = 5.0;
+        public const double DFT_TIMEOUT = 10.0;
 
         public NetworkCredential Credentials {get;}
         public string Host {get;} 

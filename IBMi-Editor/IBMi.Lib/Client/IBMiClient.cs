@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Text;
 using System.Data.Odbc;
 using Renci.SshNet;
@@ -53,26 +52,27 @@ namespace IBMi.Lib.Client{
 
         // Download a file from IFS or QSYS.LIB
         public void Download(string target, string destination){
-            using(Stream fs = File.Create(destination)){
+            
+            //https://stackoverflow.com/questions/3597735/controlling-appearance-of-new-lines-in-ibm-mainframe
+            // TODO: just use streams and readline...?
 
-                Console.WriteLine("Downloading '{0}'...", target);
-
-                // if(target.StartsWith("/QSYS.LIB")){
-                //     Console.WriteLine("Changing encoding!");
-                //     this.SftpClient.ConnectionInfo.Encoding = 
-                //         CodePagesEncodingProvider.Instance.GetEncoding(37); //IBM037
-                // } else{
-                //     this.SftpClient.ConnectionInfo.Encoding = this.Connection.DefaultEncoding;
-                // }
-
-                var lines = this.SftpClient.ReadAllLines(target, 
-                    CodePagesEncodingProvider.Instance.GetEncoding(37));
-                    
-                System.IO.File.WriteAllLines(destination, lines);
-
-                this.SftpClient.DownloadFile(target, fs);
-            }
-
+            Encoding ebcdic = CodePagesEncodingProvider.Instance.GetEncoding(37); // IBM037
+            this.SftpClient.ConnectionInfo.Encoding = target.StartsWith("/QSYS.LIB") ? ebcdic : Encoding.ASCII;
+    
+            var src = this.SftpClient.ReadAllText(target, ebcdic);
+            /*
+            // TODO: remove debug
+            if(target.StartsWith("/QSYS.LIB")){
+                string s = "";
+                for(int i = 1; i <= bytes.Length; i++){
+                    s += " " + bytes[i-1]; //.ToString("X2");
+                    if(i % 16 == 0){
+                        Console.WriteLine(s);
+                        s = "";
+                    }
+                }
+            }*/
+            System.IO.File.WriteAllText(destination, src);
         }
 
         public void Disconnect(){
