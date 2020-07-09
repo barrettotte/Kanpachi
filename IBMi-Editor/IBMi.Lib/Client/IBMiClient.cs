@@ -1,6 +1,8 @@
 using System;
 using System.Text;
+using System.IO;
 using System.Data.Odbc;
+using System.Threading;
 using Renci.SshNet;
 using IBMi.Lib.Config;
 
@@ -28,10 +30,27 @@ namespace IBMi.Lib.Client{
             this.Db2Conn.ConnectionTimeout = (int) conn.Timeout;
         }
 
+        // Run a command (blocking)
+        private int RunCmd(string cmdString){
+            var cmd = this.SshClient.CreateCommand(cmdString);
+            var task = cmd.BeginExecute();
+            while(!task.IsCompleted){
+                Thread.Sleep(1000);
+            }
+            var result = cmd.EndExecute(task);
+            // TODO: add max timeout on command
+            return 0;
+        }
+
+        // 
         public void Connect(){
             ConnectWithRetry(this.SshClient);
             ConnectWithRetry(this.SftpClient);
             this.Db2Conn.Open();
+
+            // Make sure cache directory is created
+            int status = RunCmd(string.Format("mkdir -p \"{0}\"", this.Connection.IfsCache));
+            // TODO: check status
         }
 
         // attempt to connect x times to fix known issue with SSH library
@@ -50,29 +69,29 @@ namespace IBMi.Lib.Client{
             }
         }
 
-        // Download a file from IFS or QSYS.LIB
+        // Handle downloading a file from IFS or QSYS.LIB
         public void Download(string target, string destination){
-            
-            //https://stackoverflow.com/questions/3597735/controlling-appearance-of-new-lines-in-ibm-mainframe
-            // TODO: just use streams and readline...?
+            Console.WriteLine(String.Format("Downloading '{0}' to '{1}'", target, destination));
 
-            Encoding ebcdic = CodePagesEncodingProvider.Instance.GetEncoding(37); // IBM037
-            this.SftpClient.ConnectionInfo.Encoding = target.StartsWith("/QSYS.LIB") ? ebcdic : Encoding.ASCII;
-    
-            var src = this.SftpClient.ReadAllText(target, ebcdic);
-            /*
-            // TODO: remove debug
-            if(target.StartsWith("/QSYS.LIB")){
-                string s = "";
-                for(int i = 1; i <= bytes.Length; i++){
-                    s += " " + bytes[i-1]; //.ToString("X2");
-                    if(i % 16 == 0){
-                        Console.WriteLine(s);
-                        s = "";
-                    }
+            //using(var fs = new FileStream(destination, FileMode.OpenOrCreate)){
+                Encoding encoding = Encoding.ASCII;
+                string fp = target;
+
+                if(target.StartsWith("/QSYS.LIB")){
+                    encoding = CodePagesEncodingProvider.Instance.GetEncoding(37); // IBM037;
+                    fp = this.Connection.IfsCache + "/" + "DOWN.MBR";
+
+                    Console.WriteLine(String.Format("Copying member '{0}' to '{1}'", target, fp));
+
+                    int status = RunCmd(String.Format(
+                        "system \"CPYTOSTMF FROMMBR('{0}') TOSTMF('{1}') STMFOPT(*REPLACE)\"", target, fp));
+                    // TODO: check status
+
                 }
-            }*/
-            System.IO.File.WriteAllText(destination, src);
+                //this.SftpClient.DownloadFile(fp, fs);
+                var src = Encoding.Convert(encoding, Encoding.ASCII, this.SftpClient.ReadAllBytes(fp));
+                System.IO.File.WriteAllBytes(destination, src);
+            //}
         }
 
         public void Disconnect(){

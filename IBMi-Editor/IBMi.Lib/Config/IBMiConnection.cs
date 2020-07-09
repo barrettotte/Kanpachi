@@ -19,6 +19,7 @@ namespace IBMi.Lib.Config{
 
         public string Library {get; set;}        // TODO: validate library size <= 10 + regex
         public string IfsPath {get; set;}        // TODO: validate path with regex
+        public string IfsCache {get; set;}       // temporarily cache things in IFS
 
         public Encoding DefaultEncoding {get; set;}
         public List<Encoding> FallbackEncodings {get; set;}
@@ -31,6 +32,7 @@ namespace IBMi.Lib.Config{
             this.Port = port;  
             this.Library = "QTEMP";
             this.IfsPath = "/home/" + this.User + "/";
+            this.IfsCache = this.IfsPath + "cli";
             this.DefaultEncoding = Encoding.UTF8;
             this.FallbackEncodings = new List<Encoding>(){
                 CodePagesEncodingProvider.Instance.GetEncoding(37) //IBM037
