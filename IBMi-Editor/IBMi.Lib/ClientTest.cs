@@ -1,40 +1,35 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Security;
 using IBMi.Lib.Client;
-
-using IBMi.Lib.Config;
 
 namespace IBMi.Lib{
 
     public class ClientTest{
 
         public void Test(){
-            var conn = new IBMiConnection(GetCredentials("PUB400.COM", "OTTEB"), 2222);
+            //var conn = new IbmiConnection(GetCredentials("PUB400.COM", "OTTEB"), 2222);
+            var conn = new IbmiConnection(GetCredentials("DEV400", "OTTEB"), 22);
             
-            using(var ibmi = new IBMiClient(conn)){
-                Console.WriteLine("Connecting to {0} as {1}...", conn.Host, conn.User);
-                ibmi.Connect();
+            using(var client = new IbmiClient(conn)){
+                Console.WriteLine($"Connecting to {conn.Host} as {conn.User}...");
+                client.Connect();
 
-                // Test SFTP
-                // using(Stream fs = File.Create(Path.GetFullPath("./hello.rpgle"))){
-                //     Console.WriteLine("Downloading '{0}'...", rpgle);
-                //     ibmi.SftpClient.DownloadFile(rpgle, fs);
-                // }
+                // Test SFTP - working
+                // client.DownloadMember("/QSYS.LIB/BOLIB.LIB/QRPGSRC.FILE/HELLORPG.MBR", Path.GetFullPath("./HELLO.rpg"));
+                // client.DownloadMember("/home/OTTEB/Hello-IBMi/QRPGLESRC/hellogit.rpgle", Path.GetFullPath("./hello.rpgle"));
+                // client.DownloadMember("/QSYS.LIB/BOLIB.LIB/QRPGLESRC.FILE/TESTTWILIO.MBR", Path.GetFullPath("./TESTTWILIO.sqlrpgle"));
 
-                // Test QSYS.LIB SFTP
-                ibmi.Download("/QSYS.LIB/OTTEB1.LIB/QRPGSRC.FILE/HELLO.MBR", Path.GetFullPath("./HELLO.rpg"));
-                ibmi.Download("/home/OTTEB/hello-IBMi/src/hellogit.rpgle", Path.GetFullPath("./hello.rpgle"));
-                ibmi.Download("/QSYS.LIB/OTTEB1.LIB/QRPGLESRC.FILE/ANILIST.MBR", Path.GetFullPath("./anilist.sqlrpgle"));
+                // Test SSH - working
+                CmdResponse resp = client.RunCL("DSPLIBL");
+                Console.WriteLine(resp);
 
-                // Test SSH
-                // var cmd = ibmi.SshClient.RunCommand("system 'DSPLIBL'");
-                // Console.WriteLine(cmd.Result);
+                // client.GetLibraries();
+
 
                 // Test DB2
                 // TODO: make a SQL query runner?
-                // var sqlCmd = ibmi.Db2Conn.CreateCommand();
+                // var sqlCmd = client.Db2Conn.CreateCommand();
                 // sqlCmd.CommandText = @"
                 //     SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_PARTITION, SOURCE_TYPE
                 //     FROM QSYS2.SYSPARTITIONSTAT WHERE TABLE_SCHEMA = 'OTTEB1'
@@ -58,7 +53,7 @@ namespace IBMi.Lib{
                 // dbReader.Close();
                 // sqlCmd.Dispose();
 
-                ibmi.Disconnect();
+                client.Disconnect();
             }
         }
 

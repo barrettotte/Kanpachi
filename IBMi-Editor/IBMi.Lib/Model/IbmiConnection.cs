@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace IBMi.Lib.Config{
+namespace IBMi.Lib.Client{
 
-    public class IBMiConnection{
+    public class IbmiConnection{
 
         public const int DFT_SSH_PORT = 22;
         public const int DFT_CONNECT_ATTEMPTS = 5;
@@ -25,7 +25,7 @@ namespace IBMi.Lib.Config{
         public List<Encoding> FallbackEncodings {get; set;}
 
 
-        public IBMiConnection(NetworkCredential creds, int port){
+        public IbmiConnection(NetworkCredential creds, int port){
             this.Credentials = creds;
             this.User = creds.UserName;
             this.Host = creds.Domain;

@@ -3,10 +3,10 @@ using System;
 
 namespace IBMi.Lib.Client{
 
-    public class IBMiClientException: Exception{
+    public class IbmiClientException: Exception{
         
-        public IBMiClientException(){}
-        public IBMiClientException(string message): base(message){}
+        public IbmiClientException(){}
+        public IbmiClientException(string message): base(message){}
 
     }
 }

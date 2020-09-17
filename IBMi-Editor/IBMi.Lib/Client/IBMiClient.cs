@@ -1,22 +1,21 @@
 using System;
-using System.Text;
-using System.IO;
+using System.Collections.Generic;
 using System.Data.Odbc;
+using System.Text;
 using System.Threading;
 using Renci.SshNet;
-using IBMi.Lib.Config;
 
 namespace IBMi.Lib.Client{
 
-    public class IBMiClient: IDisposable{
+    public class IbmiClient: IDisposable{
 
-        public IBMiConnection Connection {get;}
+        public IbmiConnection Connection {get;}
         public SshClient SshClient {get;}
         public SftpClient SftpClient {get;}
         public OdbcConnection Db2Conn {get;}
 
 
-        public IBMiClient(IBMiConnection conn){
+        public IbmiClient(IbmiConnection conn){
             this.Connection = conn;
 
             this.SshClient = new SshClient(conn.Host, conn.Port, conn.User, conn.Credentials.Password);
@@ -25,32 +24,46 @@ namespace IBMi.Lib.Client{
             this.SftpClient = new SftpClient(conn.Host, conn.Port, conn.User, conn.Credentials.Password);
             this.SftpClient.ConnectionInfo.Timeout = TimeSpan.FromSeconds(conn.Timeout);
 
-            this.Db2Conn = new OdbcConnection("Driver={IBM i Access ODBC Driver};" + String.Format(
-                "System={0};Uid={1};Pwd={2}", conn.Host, conn.User, conn.Credentials.Password));
+            this.Db2Conn = new OdbcConnection("Driver={IBM i Access ODBC Driver};" +
+                $"System={conn.Host};Uid={conn.User};Pwd={conn.Credentials.Password}");
             this.Db2Conn.ConnectionTimeout = (int) conn.Timeout;
         }
 
-        // Run a command (blocking)
-        private int RunCmd(string cmdString){
-            var cmd = this.SshClient.CreateCommand(cmdString);
-            var task = cmd.BeginExecute();
-            while(!task.IsCompleted){
-                Thread.Sleep(1000);
-            }
-            var result = cmd.EndExecute(task);
-            // TODO: add max timeout on command
-            return 0;
+        // Run a CL command
+        public CmdResponse RunCL(string cl){
+            // TODO: probably have to handle some string escaping here ?
+            return RunCmd($"system \"{cl}\"");
         }
 
-        // 
+        // Run a command
+        // NOTE: Might need to look into setting shell with client??? ```chsh -s /bin/ksh```
+        //       Not every user has the "correct" shell setup out of the gate...
+        public CmdResponse RunCmd(string cmdString){
+            SshCommand cmd = this.SshClient.CreateCommand(cmdString);
+            IAsyncResult task = cmd.BeginExecute();
+
+            while(!task.IsCompleted){
+                Thread.Sleep(500);
+            }
+            // TODO: add max timeout on command
+
+            CmdResponse response = new CmdResponse(cmd.ExitStatus, cmd.Error, cmd.Result);
+            cmd.EndExecute(task); 
+
+            return response;
+        }
+
+        // open all connections needed
         public void Connect(){
             ConnectWithRetry(this.SshClient);
             ConnectWithRetry(this.SftpClient);
             this.Db2Conn.Open();
 
             // Make sure cache directory is created
-            int status = RunCmd(string.Format("mkdir -p \"{0}\"", this.Connection.IfsCache));
-            // TODO: check status
+            CmdResponse resp = RunCmd($"mkdir -p \"{this.Connection.IfsCache}\"");
+            // TODO: check status, throw exception if != 0
+
+            // TODO: add list of libraries to IBMi model
         }
 
         // attempt to connect x times to fix known issue with SSH library
@@ -59,39 +72,60 @@ namespace IBMi.Lib.Client{
                 try{
                     client.Connect();
                 } catch(Renci.SshNet.Common.SshConnectionException){
-                    // Server response does not contain SSH protocol identification.
+                    // Fix bizarre error found with Renci.SshNet => Server response does not contain SSH protocol identification.
                     // https://stackoverflow.com/questions/54523798/randomly-getting-renci-sshnet-sftpclient-connect-throwing-sshconnectionexception
                 }
             }
             if(!client.IsConnected){
-                throw new IBMiClientException(String.Format(
-                    "Failed to connect after {0} attempt(s)", this.Connection.ConnectAttempts));
+                throw new IbmiClientException($"Failed to connect after {this.Connection.ConnectAttempts} attempt(s)");
             }
         }
 
-        // Handle downloading a file from IFS or QSYS.LIB
-        public void Download(string target, string destination){
-            Console.WriteLine(String.Format("Downloading '{0}' to '{1}'", target, destination));
+        // handle downloading a source member from IFS or QSYS.LIB
+        public void DownloadMember(string target, string destination){
+            Console.WriteLine($"Downloading '{target}' to '{destination}'");
+            Encoding encoding = Encoding.ASCII;
+            string srcPath = target;
 
-            //using(var fs = new FileStream(destination, FileMode.OpenOrCreate)){
-                Encoding encoding = Encoding.ASCII;
-                string fp = target;
+            if(target.StartsWith("/QSYS.LIB")){
+                // Move source member from QSYS.LIB to IFS. This fixes encoding issues presented with SFTP.
+                // It does not appear to be possible to preserve line endings with IBMi via SFTP...
+                
+                // However, maybe I can look up SRCPF row length and partition the data that way ?
 
-                if(target.StartsWith("/QSYS.LIB")){
-                    encoding = CodePagesEncodingProvider.Instance.GetEncoding(37); // IBM037;
-                    fp = this.Connection.IfsCache + "/" + "DOWN.MBR";
+                encoding = CodePagesEncodingProvider.Instance.GetEncoding(37); // IBM037;
+                srcPath = $"{this.Connection.IfsCache}/DOWN.MBR";
+                Console.WriteLine($"Copying member '{target}' to '{srcPath}'");
 
-                    Console.WriteLine(String.Format("Copying member '{0}' to '{1}'", target, fp));
+                CmdResponse resp = RunCL($"CPYTOSTMF FROMMBR('{target}') TOSTMF('{srcPath}') STMFOPT(*REPLACE)");
+                // TODO: check status, throw exception if != 0
+            }
 
-                    int status = RunCmd(String.Format(
-                        "system \"CPYTOSTMF FROMMBR('{0}') TOSTMF('{1}') STMFOPT(*REPLACE)\"", target, fp));
-                    // TODO: check status
+            byte[] src = Encoding.Convert(encoding, Encoding.ASCII, this.SftpClient.ReadAllBytes(srcPath));
+            System.IO.File.WriteAllBytes(destination, src);
+        }
 
-                }
-                //this.SftpClient.DownloadFile(fp, fs);
-                var src = Encoding.Convert(encoding, Encoding.ASCII, this.SftpClient.ReadAllBytes(fp));
-                System.IO.File.WriteAllBytes(destination, src);
-            //}
+        // Get list of all libraries in QSYS.LIB
+        public List<Library> GetLibraries(){
+            List<Library> libraries = new List<Library>();
+
+            CmdResponse resp = RunCL($"DSPLIB LIB(*ALL)");
+            Console.WriteLine(resp.StdOut);
+            // TODO: parse libraries out of STDOUT
+            // OR
+            // Just go for an all SQL approach with system views???
+
+            return libraries;
+        }
+
+        // Get source physical files in library
+        public List<SrcPf> GetSrcPfs(){
+            List<SrcPf> spfs = new List<SrcPf>();
+            /*select SYSTEM_TABLE_NAME, TABLE_TEXT, ROW_LENGTH
+              from QSYS2.SYSTABLES
+              where SYSTEM_TABLE_SCHEMA='BOLIB' and FILE_TYPE='S' and TABLE_TYPE='P'
+              ; */
+            return spfs;
         }
 
         public void Disconnect(){
@@ -101,11 +135,12 @@ namespace IBMi.Lib.Client{
         }
 
         public void Dispose(){
+            this.Disconnect();
             this.SshClient.Dispose();
             this.SftpClient.Dispose();
         }
 
-        ~IBMiClient(){
+        ~IbmiClient(){
             this.Dispose();
         }
     }
