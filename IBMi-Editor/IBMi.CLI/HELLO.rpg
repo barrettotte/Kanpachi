@@ -1,4 +1,0 @@
-OHMANC                     MOVEL'HELLO'   HELLO  11
-     C                     MOVE 'WORLD'   HELLO
-     C           HELLO     DSPLY          WAIT    1
-     C                     SETON                     LR

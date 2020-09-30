@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using Renci.SshNet;
 
-namespace IBMi.Lib.Client{
+namespace Kanpachi.Lib.Client{
 
     public class IbmiClient: IDisposable{
 

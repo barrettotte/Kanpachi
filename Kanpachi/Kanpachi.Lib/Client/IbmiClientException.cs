@@ -1,7 +1,7 @@
 using System;
 
 
-namespace IBMi.Lib.Client{
+namespace Kanpachi.Lib.Client{
 
     public class IbmiClientException: Exception{
         

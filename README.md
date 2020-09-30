@@ -1,19 +1,34 @@
-## IBMi-Editor-CLI
+## Kanpachi
 
-A basic CLI to interact with IBMi
+A subpar CLI to interact with IBM i.
 
-
-## Requirements
-- User profile with IFS privileges.
+This was made with the intention of using VS Code with the embedded terminal.
 
 
-## ODBC for IBMi on Linux
-* Unix ODBC driver (Linux) - ```apt-get install unixodbc unixodbc-dev```
-* ODBC drivers on Linux - https://www.ibm.com/support/knowledgecenter/en/SSEPGG_10.5.0/com.ibm.db2.luw.apdv.cli.doc/doc/t0061216.html
-* View ODBC drivers, grab driver description for IBMi - ```vim /etc/odbcinst.ini```
+## Features
+- ?
+
+
+## Client Requirements
+- ODBC Driver for IBM i (see [Setup](##Setup))
+
+
+## Host Requirements
+- IBM i 7.3+ (```DSPSFWRSC```)
+- User profile with home directory setup on IFS.
+
+
+## Setup
+- Windows - [docs/setup-windows.md](docs/setup-windows.md)
+- Linux - [docs/setup-linux.md](docs/setup-linux.md)
+- sorry Mac, nothing personal
+
+
+## Recommended VS Code Extensions
+- [IBMi Languages](https://marketplace.visualstudio.com/items?itemName=barrettotte.ibmi-languages) - My syntax highlighter for RPG/RPGLE, CL, DDS, and MI.
 
 
 ## References
-* [SSH.NET](https://github.com/sshnet/SSH.NET)
-* [System.Text.Encoding](https://docs.microsoft.com/en-us/dotnet/api/system.text.encoding?view=netframework-4.8)
-* [VS Code NuGet Package Manager](https://marketplace.visualstudio.com/items?itemName=jmrog.vscode-nuget-package-manager)
+- [IBM i 7.3 Documentation](https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_73/rzahg/welcome.htm)
+- [SSH.NET](https://github.com/sshnet/SSH.NET)
+- [RPGPGM](https://www.rpgpgm.com/)
