@@ -4,6 +4,8 @@ A subpar CLI to interact with IBM i.
 
 This was made with the intention of using VS Code with the embedded terminal.
 
+**Currently, I only have "phase 1" completed which was just fetching things from IBM i.**
+
 
 ## Features
 - ?
@@ -32,5 +34,4 @@ This was made with the intention of using VS Code with the embedded terminal.
 - [IBM i 7.3 Documentation](https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_73/rzahg/welcome.htm)
 - [SSH.NET](https://github.com/sshnet/SSH.NET)
 - [RPGPGM](https://www.rpgpgm.com/)
-- CommandLineParser Examples
-  - https://codingblog.carterdan.net/2019/04/12/command-line-parser/
+- [CommandLineParser Documentation](https://github.com/commandlineparser/commandline/wiki)
