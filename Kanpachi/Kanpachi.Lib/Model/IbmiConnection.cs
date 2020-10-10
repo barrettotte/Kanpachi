@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace Kanpachi.Lib.Client{
+namespace Kanpachi.Lib{
 
     public class IbmiConnection{
 

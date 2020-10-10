@@ -2,32 +2,40 @@
 
 A subpar CLI to interact with IBM i.
 
-This was made with the intention of using VS Code with the embedded terminal.
-
-**Currently, I only have "phase 1" completed which was just fetching things from IBM i.**
-
 
 ## Features
-- ?
+- Fetch files and directories from IFS.
+- Fetch libraries, source physical files, and source members from QSYS.
+- Execute CL, SQL, and shell commands.
 
 
 ## Client Requirements
-- ODBC Driver for IBM i (see [Setup](##Setup))
+- ODBC Driver for IBM i (Details in [Setup](##Setup))
 
 
 ## Host Requirements
-- IBM i 7.3+ (```DSPSFWRSC```)
+- IBM i 7.3+ (```DSPSFWRSC``` to check OS version)
 - User profile with home directory setup on IFS.
+- **TODO:** Check how things act if default shell not set to bash.
 
 
 ## Setup
-- Windows - [docs/setup-windows.md](docs/setup-windows.md)
+- **TODO:** Windows - [docs/setup-windows.md](docs/setup-windows.md)
 - Linux - [docs/setup-linux.md](docs/setup-linux.md)
-- sorry Mac, nothing personal
+- Mac - Sorry, nothing personal; I don't know a single thing about MacOS.
 
 
 ## Recommended VS Code Extensions
 - [IBMi Languages](https://marketplace.visualstudio.com/items?itemName=barrettotte.ibmi-languages) - My syntax highlighter for RPG/RPGLE, CL, DDS, and MI.
+
+
+## Project Goals
+- [ ] Phase 1 - CLI commands to fetch source
+- [ ] Phase 2 - CLI commands to execute SQL, CL, and shell
+- [ ] Phase 3 - CLI commands to update source
+- [ ] Phase 4 - API over Kanpachi.LIB
+
+After the API is written, I plan to make a VS Code extension as a frontend to the Kanpachi API in a separate repository.
 
 
 ## References

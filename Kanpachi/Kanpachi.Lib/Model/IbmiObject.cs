@@ -1,4 +1,4 @@
-namespace Kanpachi.Lib.Client{
+namespace Kanpachi.Lib{
 
     public class IbmiObject{
 

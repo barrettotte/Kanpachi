@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading;
 using Renci.SshNet;
 
-namespace Kanpachi.Lib.Client{
+namespace Kanpachi.Lib{
 
-    public class IbmiClient: IDisposable{
+    public class KanpachiClient: IDisposable{
 
         public IbmiConnection Connection {get;}
         public SshClient SshClient {get;}
@@ -15,18 +15,22 @@ namespace Kanpachi.Lib.Client{
         public OdbcConnection Db2Conn {get;}
 
 
-        public IbmiClient(IbmiConnection conn){
-            this.Connection = conn;
+        public KanpachiClient(){
+            //
+        }
 
-            this.SshClient = new SshClient(conn.Host, conn.Port, conn.User, conn.Credentials.Password);
-            this.SshClient.ConnectionInfo.Timeout = TimeSpan.FromSeconds(conn.Timeout);
+        public KanpachiClient(KanpachiProfile profile){
+            // this.Connection = conn;
 
-            this.SftpClient = new SftpClient(conn.Host, conn.Port, conn.User, conn.Credentials.Password);
-            this.SftpClient.ConnectionInfo.Timeout = TimeSpan.FromSeconds(conn.Timeout);
+            // this.SshClient = new SshClient(conn.Host, conn.Port, conn.User, conn.Credentials.Password);
+            // this.SshClient.ConnectionInfo.Timeout = TimeSpan.FromSeconds(conn.Timeout);
 
-            this.Db2Conn = new OdbcConnection("Driver={IBM i Access ODBC Driver};" +
-                $"System={conn.Host};Uid={conn.User};Pwd={conn.Credentials.Password}");
-            this.Db2Conn.ConnectionTimeout = (int) conn.Timeout;
+            // this.SftpClient = new SftpClient(conn.Host, conn.Port, conn.User, conn.Credentials.Password);
+            // this.SftpClient.ConnectionInfo.Timeout = TimeSpan.FromSeconds(conn.Timeout);
+
+            // this.Db2Conn = new OdbcConnection("Driver={IBM i Access ODBC Driver};" +
+            //     $"System={conn.Host};Uid={conn.User};Pwd={conn.Credentials.Password}");
+            // this.Db2Conn.ConnectionTimeout = (int) conn.Timeout;
         }
 
         // Run a CL command
@@ -77,7 +81,7 @@ namespace Kanpachi.Lib.Client{
                 }
             }
             if(!client.IsConnected){
-                throw new IbmiClientException($"Failed to connect after {this.Connection.ConnectAttempts} attempt(s)");
+                throw new KanpachiException($"Failed to connect after {this.Connection.ConnectAttempts} attempt(s)");
             }
         }
 
@@ -140,7 +144,7 @@ namespace Kanpachi.Lib.Client{
             this.SftpClient.Dispose();
         }
 
-        ~IbmiClient(){
+        ~KanpachiClient(){
             this.Dispose();
         }
     }

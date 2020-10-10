@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Kanpachi.Lib.Client{
+namespace Kanpachi.Lib{
 
     public class SrcPf : IbmiObject{
 
