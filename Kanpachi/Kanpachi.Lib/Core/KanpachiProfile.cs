@@ -24,6 +24,11 @@ namespace Kanpachi.Lib{
         public string DefaultEncoding {get; set;}   //
 
 
+        public KanpachiProfile(){
+            //
+        }
+
+
         public KanpachiProfile(string name, NetworkCredential creds){
             Name = name;
             Host = creds.Domain;

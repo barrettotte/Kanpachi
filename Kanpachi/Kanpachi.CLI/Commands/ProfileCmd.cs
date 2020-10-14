@@ -33,7 +33,7 @@ namespace Kanpachi.CLI{
 
     [Verb("set_dft", HelpText="Set default profile.")]
     class SetProfileDefault: BaseCmd{
-        [Value(0, HelpText="Name of profile.")]
+        [Value(0, HelpText="Name of profile.", Required=true)]
         public string Profile {get; set;}
     }
 

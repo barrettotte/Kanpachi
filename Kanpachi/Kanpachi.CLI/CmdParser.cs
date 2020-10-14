@@ -47,7 +47,7 @@ namespace Kanpachi.CLI{
                 .WithParsed<ProfileAdd>(args => service.AddProfile(args.Profile))
                 .WithParsed<ProfileLs>(_ => service.ListProfiles())
                 .WithParsed<ProfileRm>(args => service.RemoveProfile(args.Profile))
-                .WithParsed<GetProfileDefault>(args => service.GetDefaultProfile())
+                .WithParsed<GetProfileDefault>(args => Console.WriteLine(service.GetDefaultProfile()))
                 .WithParsed<SetProfileDefault>(args => service.SetDefaultProfile(args.Profile))
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }

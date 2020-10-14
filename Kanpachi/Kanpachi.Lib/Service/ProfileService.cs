@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Security;
 using Kanpachi.Lib;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Kanpachi.CLI{
 
@@ -17,18 +19,20 @@ namespace Kanpachi.CLI{
 
         // Create new connection profile (prompting for host,user,password)
         public void AddProfile(string name){
-            try{
-                if(ProfileExists(name)){
-                    throw new KanpachiException($"Profile '{name}' already exists.");
-                }
-                AddProfile(name, KanpachiUtils.GetCredentials());
-            } catch(KanpachiException e){
-                Console.WriteLine($"ERROR: {e.Message}");
+            if(ProfileExists(name)){
+                throw new KanpachiException($"Profile '{name}' already exists.");
             }
+            WriteProfile(new KanpachiProfile(name, GetCredentials()));
+            Console.WriteLine($"Added profile '{name}'.");
         }
 
         // Create new connection profile
         public void AddProfile(string name, NetworkCredential creds){
+            if(ProfileExists(name)){
+                throw new KanpachiException($"Profile '{name}' already exists.");
+            }
+            //TODO: regex [A-Za-z0-9_]+   bool IsValidProfileName()
+
             WriteProfile(new KanpachiProfile(name, creds));
             Console.WriteLine($"Added profile '{name}'.");
         }
@@ -36,13 +40,19 @@ namespace Kanpachi.CLI{
         // List profiles present in local cache
         public void ListProfiles(){
             foreach(var f in Directory.GetFiles(profilesPath, "*.json")){
-                Console.WriteLine($"{f}");
+                string[] splitPath = f.Split(Path.DirectorySeparatorChar);
+                KanpachiProfile profile = ReadProfile(splitPath[splitPath.Length-1].Split('.')[0]);
+
+                Console.WriteLine((profile.IsDefault ? "*": "") + $"{profile.Name}");
             }
         }
 
         // Remove profile from local cache
         public void RemoveProfile(string name){
-            if(!ProfileExists(name)){
+            if(GetDefaultProfile() == name){
+                throw new KanpachiException($"Cannot remove default profile '{name}'");
+            } 
+            else if(!ProfileExists(name)){
                 throw new KanpachiException($"Profile '{name}' does not exist.");
             }
             File.Delete(GetProfilePath(name));
@@ -61,38 +71,34 @@ namespace Kanpachi.CLI{
                     }
                 }
             }
-            Console.WriteLine("WARNING: Could not find default profile.");
-            return string.Empty;
+            throw new KanpachiException("Could not find a default profile set.");
         }
 
         // Set default profile from profiles in local cache
-        public void SetDefaultProfile(string name){
-            if(!ProfileExists(name)){
-                throw new KanpachiException($"Profile '{name}' does not exist.");
+        public void SetDefaultProfile(string nextDefault){
+            try{
+                KanpachiProfile lastProfile = ReadProfile(GetDefaultProfile());
+                lastProfile.IsDefault = false;
+                WriteProfile(lastProfile);
+            } catch(KanpachiException){
+                Console.WriteLine("No default profile was found.");
             }
-            
-            KanpachiProfile lastDefault = ReadProfile(GetDefaultProfile());
-            lastDefault.IsDefault = false;
-            WriteProfile(lastDefault);
+            KanpachiProfile nextProfile = ReadProfile(nextDefault);
+            nextProfile.IsDefault = true;
+            WriteProfile(nextProfile);
 
-            KanpachiProfile newDefault = ReadProfile(name);
-            newDefault.IsDefault = true;
-            WriteProfile(newDefault);
-            Console.WriteLine($"Set default profile to '{name}'");
+            Console.WriteLine($"Set default profile to '{nextDefault}'");
         }
 
         // Write profile to json file
         private void WriteProfile(KanpachiProfile profile){
             string profilePath = GetProfilePath(profile.Name);
 
-            if(File.Exists(profilePath)){
-                throw new KanpachiException($"Profile at '{profilePath}' already exists.");
-            }
             using(StreamWriter f = File.CreateText(profilePath)){
-                // f.Write(JsonConvert.SerializeObject(profile, Formatting.Indented, new JsonSerializerSettings{
-                //     ContractResolver = new CamelCasePropertyNamesContractResolver()
-                // }));
-                f.Write(JsonConvert.SerializeObject(profile, Formatting.Indented));
+                f.Write(JsonConvert.SerializeObject(profile, Formatting.Indented, new JsonSerializerSettings{
+                     ContractResolver = new CamelCasePropertyNamesContractResolver()
+                }));
+                //f.Write(JsonConvert.SerializeObject(profile, Formatting.Indented));
             }
         }
 
@@ -101,7 +107,7 @@ namespace Kanpachi.CLI{
             string profilePath = GetProfilePath(profileName);
 
             if(!File.Exists(profilePath)){
-                throw new KanpachiException($"Could not read profile from '{profilePath}'");
+                throw new KanpachiException($"Could not find profile at '{profilePath}'");
             }
             using(StreamReader f = File.OpenText(profilePath)){
                 JsonSerializer serializer = new JsonSerializer();
@@ -117,6 +123,49 @@ namespace Kanpachi.CLI{
         // check if profile exists
         private bool ProfileExists(string name){
             return File.Exists(GetProfilePath(name));
+        }
+
+        // Get host, user, and password interactively
+        private NetworkCredential GetCredentials(string inHost="", string inUser=""){
+            string user = string.Empty;
+            string host = string.Empty;
+            SecureString pwd = new SecureString();
+
+            if(string.IsNullOrEmpty(inHost)){
+                Console.Write($"Enter host: ");
+                inHost = Console.ReadLine();
+
+                if(string.IsNullOrEmpty(inHost)){
+                    throw new KanpachiException("Host cannot be blank.");
+                }
+            }
+            host = inHost;
+
+            if(string.IsNullOrEmpty(inUser)){
+                Console.Write($"Enter user for {host}: ");
+                inUser = Console.ReadLine();
+
+                if(string.IsNullOrEmpty(inUser)){
+                    throw new KanpachiException("User cannot be blank.");
+                }
+            }
+            user = inUser;
+
+            Console.Write($"Enter password for {user}@{host}: ");
+            while(true){
+                ConsoleKeyInfo i = Console.ReadKey(true);
+                if(i.Key == ConsoleKey.Enter){
+                    break;
+                } else if(i.Key == ConsoleKey.Backspace && pwd.Length > 0){
+                    pwd.RemoveAt(pwd.Length - 1);
+                    Console.Write("\b \b");
+                } else if(i.KeyChar != '\u0000'){
+                    pwd.AppendChar(i.KeyChar);
+                    Console.Write("*");
+                }
+            }
+            Console.Write("\n");
+            return new NetworkCredential(user, pwd, host);
         }
     }
 }
