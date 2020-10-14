@@ -2,6 +2,7 @@
 using System.Security;
 using System.Net;
 using Kanpachi.Lib;
+using System.Security.Cryptography;
 
 namespace Kanpachi.CLI{
 
@@ -17,17 +18,13 @@ namespace Kanpachi.CLI{
             // cmdParser.Parse(args);
 
             // Test Pbkdf2
-            SecureString password = new NetworkCredential("", "This is my password").SecurePassword;
+            string password = "this is my password";
             // var hash = Pbkdf2.Hash(password);
             // Console.WriteLine(Pbkdf2.Validate("uhh", hash));
             // Console.WriteLine(Pbkdf2.Validate(password, hash));
 
 
-            var encrypted = SecUtils.EncryptPassword(password);
-            Console.WriteLine(encrypted);
-
-            var decrypted = SecUtils.DecryptPassword(encrypted);
-            Console.WriteLine(decrypted);
+            
         }
     }
 }

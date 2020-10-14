@@ -13,7 +13,7 @@ namespace Kanpachi.Lib{
     public static class SecUtils{
 
         // derive encryption key
-        public static byte[] DeriveKey(SecureString password){
+        public static byte[] DeriveKey(string password){
             byte[] salt = GenerateSalt();
             byte[] hash = Convert.FromBase64String(Pbkdf2.Hash(password, salt));
             return hash;

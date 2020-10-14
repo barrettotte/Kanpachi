@@ -11,12 +11,8 @@ namespace Kanpachi.Lib{
         private const int defaultIterations = 100000;
         private const int hashSize = 16;
 
-        public static string Hash(SecureString password){
-            return Hash(new NetworkCredential("", password).Password, SecUtils.GenerateSalt());   
-        }
-
-        public static string Hash(SecureString password, byte[] salt){
-            return Hash(new NetworkCredential("", password).Password, salt);   
+        public static string Hash(string password){
+            return Hash(password, SecUtils.GenerateSalt());   
         }
 
         public static string Hash(string password, byte[] salt){
@@ -26,10 +22,6 @@ namespace Kanpachi.Lib{
         private static string Hash(byte[] password, byte[] salt, int iterations){
             byte[] hash = Pbkdf2Bytes(password, salt, iterations);
             return Convert.ToBase64String(hash);
-        }
-
-        public static bool Validate(SecureString password, string storedHash){
-            return Validate(new NetworkCredential("", password).Password, storedHash);
         }
 
         // validate password hash matches expected hash
