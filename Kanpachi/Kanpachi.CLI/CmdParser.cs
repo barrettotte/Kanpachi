@@ -84,5 +84,9 @@ namespace Kanpachi.CLI{
                 .WithParsed<QsysCmd>(x => ParseQsysCmd(x))
             ;
         }
+        // TODO: Decide on having an interactive option
+        //   - prompt once for password, use it multiple times in memory
+        //   - end session
+        //   - this is a middle ground between prompt for password and storing encrypted locally
     }
 }

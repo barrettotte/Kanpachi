@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Security;
-using System.Net;
 using Kanpachi.Lib;
-using System.Security.Cryptography;
 
 namespace Kanpachi.CLI{
 
@@ -17,14 +14,14 @@ namespace Kanpachi.CLI{
             // CmdParser cmdParser = new CmdParser();
             // cmdParser.Parse(args);
 
-            // Test Pbkdf2
             string password = "this is my password";
-            // var hash = Pbkdf2.Hash(password);
-            // Console.WriteLine(Pbkdf2.Validate("uhh", hash));
-            // Console.WriteLine(Pbkdf2.Validate(password, hash));
+            var key = SecUtils.DeriveKey("OTTEB_MY400");
 
+            byte[] encrypted = SecUtils.EncryptAes(key, password);
+            Console.WriteLine(Convert.ToBase64String(encrypted));
 
-            
+            string unencrypted = SecUtils.DecryptAes(key, encrypted);
+            Console.WriteLine(unencrypted);
         }
     }
 }

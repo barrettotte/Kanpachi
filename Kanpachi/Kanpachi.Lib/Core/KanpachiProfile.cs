@@ -20,8 +20,10 @@ namespace Kanpachi.Lib{
 
         public int Port {get; set;}
         public double Timeout {get; set;}           // time in seconds before timeout.
-        public int ConnectAttempts {get; set;}      // number of times to attempt if connection failed.
+        public int ConnectAttempts {get; set;}      // number of times to attempt if connection failed
         public string DefaultEncoding {get; set;}   //
+
+        public bool PromptPassword {get; set;}      // control if password is stored or prompted for each command
 
 
         public KanpachiProfile(){
