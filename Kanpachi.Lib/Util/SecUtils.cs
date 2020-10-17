@@ -9,6 +9,10 @@ namespace Kanpachi.Lib{
 
     public static class SecUtils{
 
+        public static string EncryptProfile(KanpachiProfile profile){
+            return Convert.ToBase64String(EncryptAes($"{profile.Name}+{profile.Host}+{profile.User}", profile.PasswordDecrypted));
+        }
+
         public static byte[] EncryptAes(string passphrase, string plainText){
             return EncryptAes(DeriveKey(passphrase), plainText);
         }
@@ -41,6 +45,10 @@ namespace Kanpachi.Lib{
             return combined;
         }
 
+        public static string DecryptProfile(KanpachiProfile profile){
+            return DecryptAes($"{profile.Name}+{profile.Host}+{profile.User}", profile.Password);
+        }
+
         public static string DecryptAes(string passphrase, string cipherCombined){
             return DecryptAes(DeriveKey(passphrase), Convert.FromBase64String(cipherCombined));
         }
@@ -67,8 +75,8 @@ namespace Kanpachi.Lib{
                         }
                     }
                 }
-                return plainText;
             }
+            return plainText;
         }
 
         // derive encryption key from passphrase and salt fed into PBKDF2

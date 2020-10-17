@@ -26,13 +26,13 @@ namespace Kanpachi.CLI{
         public string Profile {get; set;}
     }
 
-    [Verb("get_dft", HelpText="Get default profile.")]
-    class GetProfileDefault: BaseCmd{
+    [Verb("get_active", HelpText="Get active profile.")]
+    class GetProfileActive: BaseCmd{
         // no arguments
     }
 
-    [Verb("set_dft", HelpText="Set default profile.")]
-    class SetProfileDefault: BaseCmd{
+    [Verb("set_active", HelpText="Set active profile.")]
+    class SetProfileActive: BaseCmd{
         [Value(0, HelpText="Name of profile.", Required=true)]
         public string Profile {get; set;}
     }

@@ -39,28 +39,32 @@ namespace Kanpachi.CLI{
         }
 
         private void ParseProfileCmd(ProfileCmd baseCmd){
-            ProfileService service = new ProfileService();
+            var profileService = new ProfileService();
 
             var parser = new Parser(with => with.HelpWriter = null);
-            var parserResult = parser.ParseArguments<ProfileAdd, ProfileRm, ProfileLs, GetProfileDefault, SetProfileDefault>(baseCmd.SubArgs);
+            var parserResult = parser.ParseArguments<ProfileAdd, ProfileRm, ProfileLs, GetProfileActive, SetProfileActive>(baseCmd.SubArgs);
             parserResult
-                .WithParsed<ProfileAdd>(args => service.AddProfile(args.Profile))
-                .WithParsed<ProfileLs>(_ => service.ListProfiles())
-                .WithParsed<ProfileRm>(args => service.RemoveProfile(args.Profile))
-                .WithParsed<GetProfileDefault>(args => Console.WriteLine(service.GetDefaultProfile()))
-                .WithParsed<SetProfileDefault>(args => service.SetDefaultProfile(args.Profile))
+                .WithParsed<ProfileAdd>(args => profileService.AddProfile(args.Profile))
+                .WithParsed<ProfileLs>(_ => profileService.ListProfiles())
+                .WithParsed<ProfileRm>(args => profileService.RemoveProfile(args.Profile))
+                .WithParsed<GetProfileActive>(args => Console.WriteLine(profileService.GetActiveProfile().Name))
+                .WithParsed<SetProfileActive>(args => profileService.SetActiveProfile(args.Profile))
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }
 
         private void ParseQsysCmd(QsysCmd baseCmd){
+            var profileService = new ProfileService();
+            var profile = profileService.GetActiveProfile();
+            var qsysService = new QsysService(profile);
+
             var parser = new Parser(with => with.HelpWriter = null);
             var parserResult = parser.ParseArguments<QsysGetLib, QsysGetMbr, QsysGetSpf, QsysLsLib, QsysLsSpf>(baseCmd.SubArgs);
             parserResult
-                .WithParsed<QsysGetLib>(x => Console.WriteLine($"QSYS get lib"))
-                .WithParsed<QsysGetMbr>(x => Console.WriteLine($"QSYS get member"))
-                .WithParsed<QsysGetSpf>(x => Console.WriteLine($"QSYS get source physical file"))
-                .WithParsed<QsysLsLib>(x => Console.WriteLine($"QSYS list library"))
-                .WithParsed<QsysLsSpf>(x => Console.WriteLine($"QSYS list source physical file"))
+                .WithParsed<QsysGetLib>(args => Console.WriteLine($"QSYS get lib"))
+                .WithParsed<QsysGetMbr>(args => qsysService.GetMember(args.ServerPath, args.ClientPath))
+                .WithParsed<QsysGetSpf>(args => Console.WriteLine($"QSYS get source physical file"))
+                .WithParsed<QsysLsLib>(args => Console.WriteLine($"QSYS list library"))
+                .WithParsed<QsysLsSpf>(args => Console.WriteLine($"QSYS list source physical file"))
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }
 

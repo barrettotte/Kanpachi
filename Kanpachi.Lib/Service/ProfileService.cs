@@ -8,14 +8,11 @@ using Newtonsoft.Json.Serialization;
 
 namespace Kanpachi.CLI{
 
-    public class ProfileService : BaseService{
+    public class ProfileService: BaseService{
 
-        public string ProfilesPath {get;}
+        private string ProfilesPath;
 
-
-        public ProfileService(): this(new KanpachiClient()){}
-
-        public ProfileService(KanpachiClient client): base(client){
+        public ProfileService(): base(){
             ProfilesPath = Path.Combine(KanpachiPath, "profiles");
         }
 
@@ -40,11 +37,10 @@ namespace Kanpachi.CLI{
             KanpachiProfile profile = new KanpachiProfile(name, host, user);
 
             if(password.Length > 0){
-                byte[] encrypted = SecUtils.EncryptAes($"{name}+{host}+{user}", password);
-                profile.Password = Convert.ToBase64String(encrypted);
+                profile.PasswordDecrypted = password;
+                profile.Password = SecUtils.EncryptProfile(profile);
             }
             WriteProfile(profile);
-
             Console.WriteLine($"Added profile '{name}'.");
         }
 
@@ -54,14 +50,14 @@ namespace Kanpachi.CLI{
                 string[] splitPath = f.Split(Path.DirectorySeparatorChar);
                 KanpachiProfile profile = ReadProfile(splitPath[splitPath.Length-1].Split('.')[0]);
 
-                Console.WriteLine((profile.IsDefault ? "*": "") + $"{profile.Name}");
+                Console.WriteLine((profile.IsActive ? "*": "") + $"{profile.Name}");
             }
         }
 
         // Remove profile from local cache
         public void RemoveProfile(string name){
-            if(GetDefaultProfile() == name){
-                throw new KanpachiException($"Cannot remove default profile '{name}'");
+            if(GetActiveProfile().Name == name){
+                throw new KanpachiException($"Cannot remove active profile '{name}'");
             } 
             else if(!ProfileExists(name)){
                 throw new KanpachiException($"Profile '{name}' does not exist.");
@@ -70,40 +66,44 @@ namespace Kanpachi.CLI{
             Console.WriteLine($"Removed profile '{name}'.");
         }
 
-        // Get default profile from local cache
-        public string GetDefaultProfile(){
+        // Get active profile from local cache
+        public KanpachiProfile GetActiveProfile(){
             foreach(var filename in Directory.GetFiles(ProfilesPath, "*.json")){
                 using(StreamReader f = File.OpenText(filename)){
                     JsonSerializer serializer = new JsonSerializer();
                     KanpachiProfile profile = (KanpachiProfile) serializer.Deserialize(f, typeof(KanpachiProfile));
 
-                    if(profile.IsDefault){
-                        return profile.Name;
+                    if(profile.IsActive){
+                        profile.PasswordDecrypted = SecUtils.DecryptProfile(profile);
+                        return profile;
                     }
                 }
             }
-            throw new KanpachiException("Could not find a default profile set.");
+            throw new KanpachiException("Could not find an active profile.");
         }
 
-        // Set default profile from profiles in local cache
-        public void SetDefaultProfile(string nextDefault){
+        // Set active profile from profiles in local cache
+        public void SetActiveProfile(string nextActive){
             try{
-                KanpachiProfile lastProfile = ReadProfile(GetDefaultProfile());
-                lastProfile.IsDefault = false;
+                KanpachiProfile lastProfile = GetActiveProfile();
+                lastProfile.IsActive = false;
                 WriteProfile(lastProfile);
             } catch(KanpachiException){
-                Console.WriteLine("No default profile was found.");
+                Console.WriteLine("No active profile was found.");
             }
-            KanpachiProfile nextProfile = ReadProfile(nextDefault);
-            nextProfile.IsDefault = true;
+            KanpachiProfile nextProfile = ReadProfile(nextActive);
+            nextProfile.IsActive = true;
             WriteProfile(nextProfile);
 
-            Console.WriteLine($"Set default profile to '{nextDefault}'");
+            Console.WriteLine($"Set active profile to '{nextActive}'");
         }
 
         // Write profile to json file
-        private void WriteProfile(KanpachiProfile profile){
+        public void WriteProfile(KanpachiProfile profile){
             using(StreamWriter f = File.CreateText(GetProfilePath(profile.Name))){
+                if(profile.PasswordDecrypted != null && profile.PasswordDecrypted.Length > 0){
+                    profile.Password = SecUtils.EncryptProfile(profile);
+                }
                 f.Write(JsonConvert.SerializeObject(profile, Formatting.Indented, new JsonSerializerSettings{
                      ContractResolver = new CamelCasePropertyNamesContractResolver()
                 }));
@@ -111,7 +111,7 @@ namespace Kanpachi.CLI{
         }
 
         // Read profile from json file
-        private KanpachiProfile ReadProfile(string profileName){
+        public KanpachiProfile ReadProfile(string profileName){
             string profilePath = GetProfilePath(profileName);
 
             if(!File.Exists(profilePath)){
