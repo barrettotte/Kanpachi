@@ -1,16 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Text;
-using Newtonsoft.Json;
 
 namespace Kanpachi.Lib{
 
     public class KanpachiProfile{
     
-        [JsonIgnore]
-        public NetworkCredential Credentials {get; set;}
         public string Name {get; set;}
 
         public string Host {get; set;}
@@ -23,19 +15,16 @@ namespace Kanpachi.Lib{
         public int ConnectAttempts {get; set;}      // number of times to attempt if connection failed
         public string DefaultEncoding {get; set;}   //
 
-        public bool PromptPassword {get; set;}      // control if password is stored or prompted for each command
-
 
         public KanpachiProfile(){
             //
         }
 
 
-        public KanpachiProfile(string name, NetworkCredential creds){
+        public KanpachiProfile(string name, string host, string user){
             Name = name;
-            Host = creds.Domain;
-            User = creds.UserName;
-            Credentials = creds;
+            Host = host;
+            User = user;
             
             Port = KanpachiDefaults.SshPort;
             ConnectAttempts = KanpachiDefaults.ConnectAttempts;

@@ -4,6 +4,7 @@ A subpar CLI to interact with IBM i.
 
 
 ## Features
+- Connection profiles for different systems.
 - Fetch files and directories from IFS.
 - Fetch libraries, source physical files, and source members from QSYS.
 - Execute CL, SQL, and shell commands.
@@ -30,12 +31,12 @@ A subpar CLI to interact with IBM i.
 
 
 ## Project Goals
-- [ ] Phase 1 - CLI commands to fetch source
-- [ ] Phase 2 - CLI commands to execute SQL, CL, and shell
-- [ ] Phase 3 - CLI commands to update source
-- [ ] Phase 4 - API over Kanpachi.LIB
+- [ ] Phase 1 - CLI commands to create profiles, fetch source, and execute commands (SQL, CL, shell)
+- [ ] Phase 2 - CLI commands to update source
+- [ ] Phase 3 - API over Kanpachi.LIB
 
 After the API is written, I plan to make a VS Code extension as a frontend to the Kanpachi API in a separate repository.
+However, I'm only working on this project when I'm in the mood to. So, it might be awhile on a lot of this.
 
 
 ## References

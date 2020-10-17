@@ -10,11 +10,17 @@ namespace Kanpachi.CLI{
 
     public class ProfileService : BaseService{
 
-        public ProfileService(): base(){}
-        public ProfileService(KanpachiClient client): base(client){}
+        public string ProfilesPath {get;}
 
-        private readonly string profilesPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".kanpachi", "profiles");
+
+        public ProfileService(): this(new KanpachiClient()){}
+
+        public ProfileService(KanpachiClient client): base(client){
+            ProfilesPath = Path.Combine(KanpachiPath, "profiles");
+        }
+
+        //TODO: ??? bool IsValidProfileName() => regex [A-Za-z0-9_]+   
+        //TODO: ??? void UpdateProfile(KanpachiProfile profile)  =>  route to AddProfile if not exist
 
 
         // Create new connection profile (prompting for host,user,password)
@@ -22,24 +28,29 @@ namespace Kanpachi.CLI{
             if(ProfileExists(name)){
                 throw new KanpachiException($"Profile '{name}' already exists.");
             }
-            WriteProfile(new KanpachiProfile(name, GetCredentials()));
-            Console.WriteLine($"Added profile '{name}'.");
+            NetworkCredential creds = GetCredentials();
+            AddProfile(name, creds.Domain, creds.UserName, creds.Password);
         }
 
         // Create new connection profile
-        public void AddProfile(string name, NetworkCredential creds){
+        public void AddProfile(string name, string host, string user, string password){
             if(ProfileExists(name)){
                 throw new KanpachiException($"Profile '{name}' already exists.");
             }
-            //TODO: regex [A-Za-z0-9_]+   bool IsValidProfileName()
+            KanpachiProfile profile = new KanpachiProfile(name, host, user);
 
-            WriteProfile(new KanpachiProfile(name, creds));
+            if(password.Length > 0){
+                byte[] encrypted = SecUtils.EncryptAes($"{name}+{host}+{user}", password);
+                profile.Password = Convert.ToBase64String(encrypted);
+            }
+            WriteProfile(profile);
+
             Console.WriteLine($"Added profile '{name}'.");
         }
 
         // List profiles present in local cache
         public void ListProfiles(){
-            foreach(var f in Directory.GetFiles(profilesPath, "*.json")){
+            foreach(var f in Directory.GetFiles(ProfilesPath, "*.json")){
                 string[] splitPath = f.Split(Path.DirectorySeparatorChar);
                 KanpachiProfile profile = ReadProfile(splitPath[splitPath.Length-1].Split('.')[0]);
 
@@ -61,7 +72,7 @@ namespace Kanpachi.CLI{
 
         // Get default profile from local cache
         public string GetDefaultProfile(){
-            foreach(var filename in Directory.GetFiles(profilesPath, "*.json")){
+            foreach(var filename in Directory.GetFiles(ProfilesPath, "*.json")){
                 using(StreamReader f = File.OpenText(filename)){
                     JsonSerializer serializer = new JsonSerializer();
                     KanpachiProfile profile = (KanpachiProfile) serializer.Deserialize(f, typeof(KanpachiProfile));
@@ -92,13 +103,10 @@ namespace Kanpachi.CLI{
 
         // Write profile to json file
         private void WriteProfile(KanpachiProfile profile){
-            string profilePath = GetProfilePath(profile.Name);
-
-            using(StreamWriter f = File.CreateText(profilePath)){
+            using(StreamWriter f = File.CreateText(GetProfilePath(profile.Name))){
                 f.Write(JsonConvert.SerializeObject(profile, Formatting.Indented, new JsonSerializerSettings{
                      ContractResolver = new CamelCasePropertyNamesContractResolver()
                 }));
-                //f.Write(JsonConvert.SerializeObject(profile, Formatting.Indented));
             }
         }
 
@@ -117,7 +125,7 @@ namespace Kanpachi.CLI{
 
         // get full profile path
         private string GetProfilePath(string name){
-            return Path.Combine(profilesPath, $"{name}.json");
+            return Path.Combine(ProfilesPath, $"{name}.json");
         }
 
         // check if profile exists

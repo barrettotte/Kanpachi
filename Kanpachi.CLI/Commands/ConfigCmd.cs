@@ -17,7 +17,7 @@ namespace Kanpachi.CLI{
 
     [Verb("ls", HelpText="List key-value pairs from configuration profile")]
     class ConfigLs : BaseCmd{
-        //
+        // no arguments
     }
 
     [Verb("reset", HelpText="Reset configuration value.")]

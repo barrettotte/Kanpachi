@@ -9,9 +9,8 @@ namespace Kanpachi.Lib{
 
     public static class SecUtils{
 
-        public static (byte[], byte[]) EncryptAes(string passphrase, string plainText){
-            byte[] key = DeriveKey(passphrase);
-            return (key, EncryptAes(DeriveKey(passphrase), plainText));
+        public static byte[] EncryptAes(string passphrase, string plainText){
+            return EncryptAes(DeriveKey(passphrase), plainText);
         }
 
         public static byte[] EncryptAes(byte[] key, string plainText){
@@ -23,6 +22,7 @@ namespace Kanpachi.Lib{
                 aes.GenerateIV();
                 iv = aes.IV;
                 aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.Zeros;
 
                 var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
                 using(var ms = new MemoryStream()){
@@ -41,6 +41,10 @@ namespace Kanpachi.Lib{
             return combined;
         }
 
+        public static string DecryptAes(string passphrase, string cipherCombined){
+            return DecryptAes(DeriveKey(passphrase), Convert.FromBase64String(cipherCombined));
+        }
+
         public static string DecryptAes(byte[] key, byte[] cipherCombined){
             string plainText = null;
 
@@ -53,6 +57,7 @@ namespace Kanpachi.Lib{
                 Array.Copy(cipherCombined, iv.Length, cipher, 0, cipher.Length);
                 aes.IV = iv;
                 aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.Zeros;
 
                 var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
                 using(var ms = new MemoryStream(cipher)){
@@ -76,8 +81,8 @@ namespace Kanpachi.Lib{
         public static byte[] GenerateSalt(){
             string hardwareSalt = new DeviceIdBuilder()
                 .AddMotherboardSerialNumber()
-                .AddProcessorId()
                 .AddUserName()
+                .AddSystemDriveSerialNumber()
                 .UseFormatter(new HashDeviceIdFormatter(() => SHA256.Create(), new Base64ByteArrayEncoder()))
                 .ToString()
             ;
