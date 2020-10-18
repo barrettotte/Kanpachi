@@ -2,6 +2,9 @@
 
 A subpar CLI to interact with IBM i.
 
+**Unfortunately, I have only tested this out with my work's system.**
+**So, I'm positive there are issues I'm not aware of.**
+
 
 ## Features
 - Connection profiles for different systems.

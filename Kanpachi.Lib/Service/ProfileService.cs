@@ -23,7 +23,7 @@ namespace Kanpachi.CLI{
         // Create new connection profile (prompting for host,user,password)
         public void AddProfile(string name){
             if(ProfileExists(name)){
-                throw new KanpachiException($"Profile '{name}' already exists.");
+                throw new KanpachiProfileException($"Profile '{name}' already exists.");
             }
             NetworkCredential creds = GetCredentials();
             AddProfile(name, creds.Domain, creds.UserName, creds.Password);
@@ -32,9 +32,18 @@ namespace Kanpachi.CLI{
         // Create new connection profile
         public void AddProfile(string name, string host, string user, string password){
             if(ProfileExists(name)){
-                throw new KanpachiException($"Profile '{name}' already exists.");
+                throw new KanpachiProfileException($"Profile '{name}' already exists.");
             }
             KanpachiProfile profile = new KanpachiProfile(name, host, user);
+
+            try{
+                if(GetActiveProfile().Name == name){
+                    System.Console.WriteLine($"Profile '{name}' is already active.");
+                    return;
+                }
+            } catch(KanpachiException){
+                profile.IsActive = true;
+            }
 
             if(password.Length > 0){
                 profile.PasswordDecrypted = password;
@@ -57,10 +66,10 @@ namespace Kanpachi.CLI{
         // Remove profile from local cache
         public void RemoveProfile(string name){
             if(GetActiveProfile().Name == name){
-                throw new KanpachiException($"Cannot remove active profile '{name}'");
+                throw new KanpachiProfileException($"Cannot remove active profile '{name}'");
             } 
             else if(!ProfileExists(name)){
-                throw new KanpachiException($"Profile '{name}' does not exist.");
+                throw new KanpachiProfileException($"Profile '{name}' does not exist.");
             }
             File.Delete(GetProfilePath(name));
             Console.WriteLine($"Removed profile '{name}'.");
@@ -79,7 +88,7 @@ namespace Kanpachi.CLI{
                     }
                 }
             }
-            throw new KanpachiException("Could not find an active profile.");
+            throw new KanpachiProfileException("Could not find an active profile.");
         }
 
         // Set active profile from profiles in local cache
@@ -88,7 +97,7 @@ namespace Kanpachi.CLI{
                 KanpachiProfile lastProfile = GetActiveProfile();
                 lastProfile.IsActive = false;
                 WriteProfile(lastProfile);
-            } catch(KanpachiException){
+            } catch(KanpachiProfileException){
                 Console.WriteLine("No active profile was found.");
             }
             KanpachiProfile nextProfile = ReadProfile(nextActive);
@@ -100,6 +109,9 @@ namespace Kanpachi.CLI{
 
         // Write profile to json file
         public void WriteProfile(KanpachiProfile profile){
+            if(!Directory.Exists(ProfilesPath)){
+                Directory.CreateDirectory(ProfilesPath);
+            }
             using(StreamWriter f = File.CreateText(GetProfilePath(profile.Name))){
                 if(profile.PasswordDecrypted != null && profile.PasswordDecrypted.Length > 0){
                     profile.Password = SecUtils.EncryptProfile(profile);
@@ -115,7 +127,7 @@ namespace Kanpachi.CLI{
             string profilePath = GetProfilePath(profileName);
 
             if(!File.Exists(profilePath)){
-                throw new KanpachiException($"Could not find profile at '{profilePath}'");
+                throw new KanpachiProfileException($"Could not find profile at '{profilePath}'");
             }
             using(StreamReader f = File.OpenText(profilePath)){
                 JsonSerializer serializer = new JsonSerializer();
@@ -124,12 +136,12 @@ namespace Kanpachi.CLI{
         }
 
         // get full profile path
-        private string GetProfilePath(string name){
+        public string GetProfilePath(string name){
             return Path.Combine(ProfilesPath, $"{name}.json");
         }
 
         // check if profile exists
-        private bool ProfileExists(string name){
+        public bool ProfileExists(string name){
             return File.Exists(GetProfilePath(name));
         }
 
@@ -139,22 +151,22 @@ namespace Kanpachi.CLI{
             string host = string.Empty;
             SecureString pwd = new SecureString();
 
-            if(string.IsNullOrEmpty(inHost)){
+            if(string.IsNullOrEmpty(inHost.Trim())){
                 Console.Write($"Enter host: ");
                 inHost = Console.ReadLine();
 
-                if(string.IsNullOrEmpty(inHost)){
-                    throw new KanpachiException("Host cannot be blank.");
+                if(string.IsNullOrEmpty(inHost.Trim())){
+                    throw new KanpachiProfileException("Host cannot be blank.");
                 }
             }
             host = inHost;
 
-            if(string.IsNullOrEmpty(inUser)){
+            if(string.IsNullOrEmpty(inUser.Trim())){
                 Console.Write($"Enter user for {host}: ");
                 inUser = Console.ReadLine();
 
-                if(string.IsNullOrEmpty(inUser)){
-                    throw new KanpachiException("User cannot be blank.");
+                if(string.IsNullOrEmpty(inUser.Trim())){
+                    throw new KanpachiProfileException("User cannot be blank.");
                 }
             }
             user = inUser;

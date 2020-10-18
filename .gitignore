@@ -10,3 +10,4 @@ bin/
 obj/
 out/
 .vscode/
+*.code-workspace

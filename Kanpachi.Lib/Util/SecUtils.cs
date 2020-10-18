@@ -10,7 +10,8 @@ namespace Kanpachi.Lib{
     public static class SecUtils{
 
         public static string EncryptProfile(KanpachiProfile profile){
-            return Convert.ToBase64String(EncryptAes($"{profile.Name}+{profile.Host}+{profile.User}", profile.PasswordDecrypted));
+            var passphrase = BuildPassphrase(profile);
+            return Convert.ToBase64String(EncryptAes(passphrase, profile.PasswordDecrypted));
         }
 
         public static byte[] EncryptAes(string passphrase, string plainText){
@@ -26,7 +27,7 @@ namespace Kanpachi.Lib{
                 aes.GenerateIV();
                 iv = aes.IV;
                 aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.Zeros;
+                aes.Padding = PaddingMode.PKCS7;
 
                 var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
                 using(var ms = new MemoryStream()){
@@ -46,7 +47,7 @@ namespace Kanpachi.Lib{
         }
 
         public static string DecryptProfile(KanpachiProfile profile){
-            return DecryptAes($"{profile.Name}+{profile.Host}+{profile.User}", profile.Password);
+            return DecryptAes(BuildPassphrase(profile), profile.Password);
         }
 
         public static string DecryptAes(string passphrase, string cipherCombined){
@@ -65,7 +66,7 @@ namespace Kanpachi.Lib{
                 Array.Copy(cipherCombined, iv.Length, cipher, 0, cipher.Length);
                 aes.IV = iv;
                 aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.Zeros;
+                aes.Padding = PaddingMode.PKCS7;
 
                 var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
                 using(var ms = new MemoryStream(cipher)){
@@ -95,6 +96,11 @@ namespace Kanpachi.Lib{
                 .ToString()
             ;
             return Convert.FromBase64String(hardwareSalt);
+        }
+
+        // build simple passphrase for encryption
+        private static string BuildPassphrase(KanpachiProfile profile){
+            return $"{profile.Name}+{profile.Host}+{profile.User}";
         }
 
         // generate crypto random number

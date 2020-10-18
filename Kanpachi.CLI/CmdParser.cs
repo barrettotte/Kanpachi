@@ -64,7 +64,7 @@ namespace Kanpachi.CLI{
                 .WithParsed<QsysGetMbr>(args => qsysService.GetMember(args.ServerPath, args.ClientPath))
                 .WithParsed<QsysGetSpf>(args => Console.WriteLine($"QSYS get source physical file"))
                 .WithParsed<QsysLsLib>(args => Console.WriteLine($"QSYS list library"))
-                .WithParsed<QsysLsSpf>(args => Console.WriteLine($"QSYS list source physical file"))
+                .WithParsed<QsysLsSpf>(args => qsysService.GetMemberList(args.ServerPath))
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }
 
