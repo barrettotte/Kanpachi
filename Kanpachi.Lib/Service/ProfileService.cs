@@ -12,11 +12,11 @@ namespace Kanpachi.Lib{
 
         public ProfileService(): base(){
             ProfilesPath = Path.Combine(KanpachiPath, "profiles");
+
+            if(!Directory.Exists(ProfilesPath)){
+                Directory.CreateDirectory(ProfilesPath);
+            }
         }
-
-        //TODO: ??? bool IsValidProfileName() => regex [A-Za-z0-9_]+   
-        //TODO: ??? void UpdateProfile(KanpachiProfile profile)  =>  route to AddProfile if not exist
-
 
         // Create new connection profile (prompting for host,user,password)
         public void AddProfile(string name){
@@ -35,12 +35,12 @@ namespace Kanpachi.Lib{
             KanpachiProfile profile = new KanpachiProfile(name, host, user);
 
             try{
-                if(GetActiveProfile().Name == name){
+                if(GetActiveProfile(true).Name == name){
                     System.Console.WriteLine($"Profile {name} is already active.");
                     return;
                 }
-            } catch(KanpachiException){
-                profile.IsActive = true;
+            } catch(KanpachiProfileException){
+                profile.IsActive = true; // no active profile, so set this new one
             }
 
             if(password.Length > 0){
@@ -63,7 +63,7 @@ namespace Kanpachi.Lib{
 
         // Remove profile from local cache
         public void RemoveProfile(string name){
-            if(GetActiveProfile().Name == name){
+            if(GetActiveProfile(true).Name == name){
                 throw new KanpachiProfileException($"Cannot remove active profile '{name}'");
             } 
             else if(!ProfileExists(name)){
@@ -74,14 +74,16 @@ namespace Kanpachi.Lib{
         }
 
         // Get active profile from local cache
-        public KanpachiProfile GetActiveProfile(){
+        public KanpachiProfile GetActiveProfile(bool skipDecryption=false){
             foreach(var filename in Directory.GetFiles(ProfilesPath, "*.json")){
                 using(StreamReader f = File.OpenText(filename)){
                     JsonSerializer serializer = new JsonSerializer();
                     KanpachiProfile profile = (KanpachiProfile) serializer.Deserialize(f, typeof(KanpachiProfile));
 
                     if(profile.IsActive){
-                        profile.PasswordDecrypted = SecUtils.DecryptProfile(profile);
+                        if(!skipDecryption){
+                            profile.PasswordDecrypted = SecUtils.DecryptProfile(profile);
+                        }
                         return profile;
                     }
                 }
@@ -92,7 +94,7 @@ namespace Kanpachi.Lib{
         // Set active profile from profiles in local cache
         public void SetActiveProfile(string nextActive){
             try{
-                KanpachiProfile lastProfile = GetActiveProfile();
+                KanpachiProfile lastProfile = GetActiveProfile(true);
                 lastProfile.IsActive = false;
                 WriteProfile(lastProfile);
             } catch(KanpachiProfileException){

@@ -7,6 +7,8 @@ namespace Kanpachi.CLI{
 
     class CmdParser{
 
+        private ProfileService profileService;
+
         // TODO: this is gross, refactor it to something...
 
         private void ParseConfigCmd(ConfigCmd baseCmd){
@@ -41,22 +43,23 @@ namespace Kanpachi.CLI{
         }
 
         private void ParseProfileCmd(ProfileCmd baseCmd){
-            var profileService = new ProfileService();
-
             var parser = new Parser(with => with.HelpWriter = null);
             var parserResult = parser.ParseArguments<ProfileAdd, ProfileRm, ProfileLs, GetProfileActive, SetProfileActive>(baseCmd.SubArgs);
             parserResult
                 .WithParsed<ProfileAdd>(args => profileService.AddProfile(args.Profile))
                 .WithParsed<ProfileLs>(_ => profileService.ListProfiles())
                 .WithParsed<ProfileRm>(args => profileService.RemoveProfile(args.Profile))
-                .WithParsed<GetProfileActive>(args => Console.WriteLine(profileService.GetActiveProfile().Name))
+                .WithParsed<GetProfileActive>(args => Console.WriteLine(profileService.GetActiveProfile(true).Name))
                 .WithParsed<SetProfileActive>(args => profileService.SetActiveProfile(args.Profile))
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }
 
+        // TODO: slow because of decryption...
         private void ParseQsysCmd(QsysCmd baseCmd){
-            var profileService = new ProfileService();
             var profile = profileService.GetActiveProfile();
+            if(profile == null){
+                throw new KanpachiProfileException("No active profile set.");
+            }
             var qsysService = new QsysService(profile);
 
             var parser = new Parser(with => with.HelpWriter = null);
@@ -65,8 +68,9 @@ namespace Kanpachi.CLI{
                 .WithParsed<QsysGetLib>(args => qsysService.GetLibrary(args.ServerPath, args.ClientPath))
                 .WithParsed<QsysGetMbr>(args => qsysService.GetMember(args.ServerPath, args.ClientPath))
                 .WithParsed<QsysGetSpf>(args => qsysService.GetSpf(args.ServerPath, args.ClientPath))
-                .WithParsed<QsysLsLib>(args => Console.WriteLine($"QSYS list library"))
-                .WithParsed<QsysLsSpf>(args => qsysService.GetMemberList(args.ServerPath))
+                .WithParsed<QsysLsLib>(_ => qsysService.ListLibraries())
+                .WithParsed<QsysLsSpf>(args => qsysService.ListSpfs(args.ServerPath))
+                .WithParsed<QsysLsMbr>(args => qsysService.ListMembers(args.ServerPath))
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }
 
@@ -82,6 +86,8 @@ namespace Kanpachi.CLI{
 
         // Parse/route main commands to subcommands
         public void Parse(string[] args){
+            profileService = new ProfileService();
+
             Parser.Default.ParseArguments<ConfigCmd, ExecCmd, IfsCmd, ProfileCmd, QsysCmd>(args)
                 .WithParsed<ConfigCmd>(x => ParseConfigCmd(x))
                 .WithParsed<ExecCmd>(x => ParseExecCmd(x))
@@ -92,8 +98,7 @@ namespace Kanpachi.CLI{
         }
 
         // TODO: Decide on having an interactive option
-        //   - prompt once for password, use it multiple times in memory
-        //   - end session
+        //   - prompt once for password, use it multiple times in memory for interactive session
         //   - this is a middle ground between prompt for password and storing encrypted locally
     }
 }

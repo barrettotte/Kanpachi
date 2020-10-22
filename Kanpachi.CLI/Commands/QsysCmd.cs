@@ -36,14 +36,19 @@ namespace Kanpachi.CLI{
         public string ClientPath {get; set;}
     }
 
-    [Verb("ls_lib", HelpText="List source physical files in library.")]
+    [Verb("ls_lib", HelpText="List libraries on host.")]
     class QsysLsLib : BaseCmd{
+        // no arguments
+    }
+
+    [Verb("ls_spf", HelpText="List source physical files in library.")]
+    class QsysLsSpf : BaseCmd{
         [Value(0, HelpText="Name of Library.", Required=true)]
         public string ServerPath {get; set;}
     }
 
-    [Verb("ls_spf", HelpText="List source members in source physical file.")]
-    class QsysLsSpf : BaseCmd{
+    [Verb("ls_mbr", HelpText="List source members in source physical file.")]
+    class QsysLsMbr : BaseCmd{
         [Value(0, HelpText="Path to source physical file in QSYS (LIB/SRCPF).", Required=true)]
         public string ServerPath {get; set;}
     }

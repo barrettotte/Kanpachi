@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Security;
 using Renci.SshNet;
@@ -83,6 +84,27 @@ namespace Kanpachi.Lib{
             }
             Console.Write("\n");
             return pwd;
+        }
+
+        // build base download path
+        public static string BuildDownloadPath(string downloadPath, KanpachiProfile profile){
+            string clientPath = string.Empty;
+
+            // if no argument passed, fallback to download path defined in profile
+            if(downloadPath == null || downloadPath.Trim().Length == 0){
+                if(profile.DownloadPath == null || profile.DownloadPath.Trim().Length == 0){
+                    clientPath = Directory.GetCurrentDirectory();
+                } else{
+                    clientPath = profile.DownloadPath;
+                }
+            } else{
+                clientPath = Path.GetFullPath(downloadPath);
+            }
+
+            if(!Directory.Exists(clientPath)){
+                Directory.CreateDirectory(clientPath);
+            }
+            return clientPath;
         }
     }
 }

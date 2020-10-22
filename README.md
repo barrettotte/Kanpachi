@@ -7,6 +7,10 @@ I've only really tested it on my work's system with V7R3.
 So, this might not work very well for other people.
 
 
+I'm sure someone could take some ideas from this and make something way better.
+This definitely needs a lot more polishing.
+
+
 ## Features
 - Connection profiles for different systems/users.
 - Fetch files and directories from IFS.
@@ -41,6 +45,7 @@ I'm only working on this project when I'm in the mood to. So, it might be awhile
 
 ## References
 - [IBM i 7.3 Documentation](https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_73/rzahg/welcome.htm)
+- [IBM i DB2 Connection String Keywords](https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_74/rzaik/connectkeywords.htm)
 - [SSH.NET](https://github.com/sshnet/SSH.NET)
 - [RPGPGM](https://www.rpgpgm.com/)
 - [CommandLineParser Documentation](https://github.com/commandlineparser/commandline/wiki)

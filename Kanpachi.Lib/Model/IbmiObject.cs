@@ -16,7 +16,7 @@ namespace Kanpachi.Lib{
         }
 
         public override string ToString(){
-            return $"{Name,-10} | {Text,-50}";
+            return $"| {Name,-10} | {Text,-50} | ";
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Kanpachi.Lib{
         }
 
         public override string ToString(){
-            return base.ToString() + $" {Attribute,-10} | {LineCount,5} line(s) | {RecordLength,4} column(s)";
+            return base.ToString() + $"{Attribute,-10} | {LineCount,5} line(s) | {RecordLength,4} column(s) | ";
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Kanpachi.Lib{
         int HashSize {get;}
 
         public Pbkdf2(){
-            DefaultIterations = 1000000;
+            DefaultIterations = 100000;
             HashSize = 16;
         }
 

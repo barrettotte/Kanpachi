@@ -8,15 +8,11 @@ namespace Kanpachi.Lib{
 
 
         public Library(){
-            //
+            SrcPfs = new List<SrcPf>();
         }
 
         public Library(string name, string text): base(name, text){
             SrcPfs = new List<SrcPf>();
-        }
-
-        public override string ToString(){
-            return base.ToString() + $" | {SrcPfs.Count,5} source physical file(s)";
         }
     }
 }

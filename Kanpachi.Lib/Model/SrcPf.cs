@@ -8,7 +8,7 @@ namespace Kanpachi.Lib{
 
 
         public SrcPf(){
-            //
+            Members = new List<SrcMbr>();
         }
 
         public SrcPf(string name, string text): base(name, text){
@@ -16,7 +16,7 @@ namespace Kanpachi.Lib{
         }
 
         public override string ToString(){
-            return base.ToString() + $" | {Members.Count,5} member(s)";
+            return base.ToString() + $"{Members.Count,5} member(s) | ";
         }
     }
 }
