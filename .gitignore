@@ -11,3 +11,5 @@ obj/
 out/
 .vscode/
 *.code-workspace
+
+Kanpachi.CLI/QSYS

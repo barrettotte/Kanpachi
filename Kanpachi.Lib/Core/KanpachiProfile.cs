@@ -27,7 +27,6 @@ namespace Kanpachi.Lib{
             // default constructor needed for JSON deserialization
         }
 
-
         public KanpachiProfile(string name, string host, string user){
             Name = name;
             IsActive = false;

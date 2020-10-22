@@ -37,4 +37,5 @@ namespace Kanpachi.CLI{
         public string Profile {get; set;}
     }
 
+    // TODO: help command
 }

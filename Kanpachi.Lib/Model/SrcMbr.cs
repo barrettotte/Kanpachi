@@ -1,37 +1,26 @@
-using System;
-
 namespace Kanpachi.Lib{
 
-    public class SrcMbr{
+    public class SrcMbr : IbmiObject{
 
-        public string Name {get; set;}
-        public string Type {get; set;}
+        public string Attribute {get; set;}
         public int LineCount {get; set;}
-        public string Text {get; set;}
         public int RecordLength {get; set;}
-        public int Size {get; set;}
-        public DateTime Created {get; set;}
-        public DateTime Updated {get; set;}
-        public byte[] Content {get; set;}
+        public byte[] Content {get; set;} // actual source code
 
 
-        public SrcMbr(){}
+        public SrcMbr(){
+            //
+        }
 
-        public SrcMbr(string name, string type, int lineCount, string text, 
-          int recordLength, int size, DateTime created, DateTime updated){
-            Name = name;
-            Type = type;
+        public SrcMbr(string name, string text, string attribute, int lineCount, int recordLength): base(name, text){
+            Attribute = attribute;
             LineCount = lineCount;
-            Text = text;
             RecordLength = recordLength;
-            Size = size;
-            Created = created;
-            Updated = updated;
             Content = null;
         }
 
         public override string ToString(){
-            return $"{Name,10} | {Type,10} | {Text,50} | {LineCount,5} line(s) | {Size,6} byte(s)";
+            return base.ToString() + $" {Attribute,-10} | {LineCount,5} line(s) | {RecordLength,4} column(s)";
         }
     }
 }

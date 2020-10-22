@@ -47,4 +47,6 @@ namespace Kanpachi.CLI{
         [Value(0, HelpText="Path to source physical file in QSYS (LIB/SRCPF).", Required=true)]
         public string ServerPath {get; set;}
     }
+
+    // TODO: help command
 }

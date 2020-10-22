@@ -1,12 +1,11 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Security;
 using Kanpachi.Lib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Kanpachi.CLI{
+namespace Kanpachi.Lib{
 
     public class ProfileService: BaseService{
 
@@ -23,22 +22,22 @@ namespace Kanpachi.CLI{
         // Create new connection profile (prompting for host,user,password)
         public void AddProfile(string name){
             if(ProfileExists(name)){
-                throw new KanpachiProfileException($"Profile '{name}' already exists.");
+                throw new KanpachiProfileException($"Profile {name} already exists.");
             }
-            NetworkCredential creds = GetCredentials();
+            NetworkCredential creds = ClientUtils.GetCredentials();
             AddProfile(name, creds.Domain, creds.UserName, creds.Password);
         }
 
         // Create new connection profile
         public void AddProfile(string name, string host, string user, string password){
             if(ProfileExists(name)){
-                throw new KanpachiProfileException($"Profile '{name}' already exists.");
+                throw new KanpachiProfileException($"Profile {name} already exists.");
             }
             KanpachiProfile profile = new KanpachiProfile(name, host, user);
 
             try{
                 if(GetActiveProfile().Name == name){
-                    System.Console.WriteLine($"Profile '{name}' is already active.");
+                    System.Console.WriteLine($"Profile {name} is already active.");
                     return;
                 }
             } catch(KanpachiException){
@@ -50,7 +49,7 @@ namespace Kanpachi.CLI{
                 profile.Password = SecUtils.EncryptProfile(profile);
             }
             WriteProfile(profile);
-            Console.WriteLine($"Added profile '{name}'.");
+            Console.WriteLine($"Added profile {name}.");
         }
 
         // List profiles present in local cache
@@ -69,10 +68,10 @@ namespace Kanpachi.CLI{
                 throw new KanpachiProfileException($"Cannot remove active profile '{name}'");
             } 
             else if(!ProfileExists(name)){
-                throw new KanpachiProfileException($"Profile '{name}' does not exist.");
+                throw new KanpachiProfileException($"Profile {name} does not exist.");
             }
             File.Delete(GetProfilePath(name));
-            Console.WriteLine($"Removed profile '{name}'.");
+            Console.WriteLine($"Removed profile {name}.");
         }
 
         // Get active profile from local cache
@@ -104,7 +103,7 @@ namespace Kanpachi.CLI{
             nextProfile.IsActive = true;
             WriteProfile(nextProfile);
 
-            Console.WriteLine($"Set active profile to '{nextActive}'");
+            Console.WriteLine($"Set active profile to {nextActive}");
         }
 
         // Write profile to json file
@@ -127,7 +126,7 @@ namespace Kanpachi.CLI{
             string profilePath = GetProfilePath(profileName);
 
             if(!File.Exists(profilePath)){
-                throw new KanpachiProfileException($"Could not find profile at '{profilePath}'");
+                throw new KanpachiProfileException($"Could not find profile at {profilePath}");
             }
             using(StreamReader f = File.OpenText(profilePath)){
                 JsonSerializer serializer = new JsonSerializer();
@@ -143,49 +142,6 @@ namespace Kanpachi.CLI{
         // check if profile exists
         public bool ProfileExists(string name){
             return File.Exists(GetProfilePath(name));
-        }
-
-        // Get host, user, and password interactively
-        private NetworkCredential GetCredentials(string inHost="", string inUser=""){
-            string user = string.Empty;
-            string host = string.Empty;
-            SecureString pwd = new SecureString();
-
-            if(string.IsNullOrEmpty(inHost.Trim())){
-                Console.Write($"Enter host: ");
-                inHost = Console.ReadLine();
-
-                if(string.IsNullOrEmpty(inHost.Trim())){
-                    throw new KanpachiProfileException("Host cannot be blank.");
-                }
-            }
-            host = inHost;
-
-            if(string.IsNullOrEmpty(inUser.Trim())){
-                Console.Write($"Enter user for {host}: ");
-                inUser = Console.ReadLine();
-
-                if(string.IsNullOrEmpty(inUser.Trim())){
-                    throw new KanpachiProfileException("User cannot be blank.");
-                }
-            }
-            user = inUser;
-
-            Console.Write($"Enter password for {user}@{host}: ");
-            while(true){
-                ConsoleKeyInfo i = Console.ReadKey(true);
-                if(i.Key == ConsoleKey.Enter){
-                    break;
-                } else if(i.Key == ConsoleKey.Backspace && pwd.Length > 0){
-                    pwd.RemoveAt(pwd.Length - 1);
-                    Console.Write("\b \b");
-                } else if(i.KeyChar != '\u0000'){
-                    pwd.AppendChar(i.KeyChar);
-                    Console.Write("*");
-                }
-            }
-            Console.Write("\n");
-            return new NetworkCredential(user, pwd, host);
         }
     }
 }

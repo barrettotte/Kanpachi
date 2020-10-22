@@ -7,6 +7,8 @@ namespace Kanpachi.CLI{
 
     class CmdParser{
 
+        // TODO: this is gross, refactor it to something...
+
         private void ParseConfigCmd(ConfigCmd baseCmd){
             var parser = new Parser(with => with.HelpWriter = null);
             var parserResult = parser.ParseArguments<ConfigGet, ConfigSet, ConfigLs, ConfigReset>(baseCmd.SubArgs);
@@ -60,9 +62,9 @@ namespace Kanpachi.CLI{
             var parser = new Parser(with => with.HelpWriter = null);
             var parserResult = parser.ParseArguments<QsysGetLib, QsysGetMbr, QsysGetSpf, QsysLsLib, QsysLsSpf>(baseCmd.SubArgs);
             parserResult
-                .WithParsed<QsysGetLib>(args => Console.WriteLine($"QSYS get lib"))
+                .WithParsed<QsysGetLib>(args => qsysService.GetLibrary(args.ServerPath, args.ClientPath))
                 .WithParsed<QsysGetMbr>(args => qsysService.GetMember(args.ServerPath, args.ClientPath))
-                .WithParsed<QsysGetSpf>(args => Console.WriteLine($"QSYS get source physical file"))
+                .WithParsed<QsysGetSpf>(args => qsysService.GetSpf(args.ServerPath, args.ClientPath))
                 .WithParsed<QsysLsLib>(args => Console.WriteLine($"QSYS list library"))
                 .WithParsed<QsysLsSpf>(args => qsysService.GetMemberList(args.ServerPath))
                 .WithNotParsed(_ => WriteHelpText(parserResult));

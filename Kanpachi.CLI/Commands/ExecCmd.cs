@@ -26,4 +26,6 @@ namespace Kanpachi.CLI{
         [Value(0, HelpText="SQL string", Required=true)]
         public string SqlCmd {get; set;}
     }
+
+    // TODO: help command
 }

@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-using Kanpachi.Lib;
 
-namespace Kanpachi.CLI{
+namespace Kanpachi.Lib{
 
     public class BaseService{
 

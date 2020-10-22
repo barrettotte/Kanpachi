@@ -34,4 +34,6 @@ namespace Kanpachi.CLI{
         [Value(1, HelpText="New configuration value.", Required=true)]
         public string Value {get; set;}
     }
+
+    // TODO: help command
 }

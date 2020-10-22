@@ -11,7 +11,10 @@ namespace Kanpachi.Lib{
         public DateTimeOffset ExitTime {get; set;}
         public TimeSpan RunTime {get; set;}
 
-        public CmdResponse(){}
+
+        public CmdResponse(){
+            //
+        }
 
         public CmdResponse(int exitCode, string stdErr, string stdOut){
             ExitCode = exitCode;
