@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Net;
-using Kanpachi.Lib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 

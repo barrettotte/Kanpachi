@@ -13,23 +13,15 @@ namespace Kanpachi.Lib{
             Profile = profile;
         }
 
-        // TODO: regex for naming
-        //  LIB   - [A-Za-z@#$][A-Za-z0-9._@#$]{9}
-        //  SRCPF - 
-        //  MBR   -  
-
-        // BOLIB/QRPGSRC/HELLORPG => /QSYS.LIB/BOLIB.LIB/QRPGSRC.FILE/HELLORPG.MBR
         public void GetMember(string qsysPath, string downloadPath){
-            var splitPath = qsysPath.ToUpper().Split('/');
-
-            // TODO: validate member path with regex instead of this
-            if(splitPath.Length != 3){
-                throw new KanpachiFormatException("Expected member path of format LIB/SRCPF/MBR");
+            if(!RegexUtils.MatchSrcMbrPath(qsysPath)){
+                throw new KanpachiFormatException("Expected source member path of format LIB/SRCPF/MBR");
             }
+            var splitPath = qsysPath.ToUpper().Split('/');
             (string lib, string spf, string mbr) = (splitPath[0], splitPath[1], splitPath[2]);
             
             var srcPath = $"/QSYS.LIB/{lib}.LIB/{spf}.FILE/{mbr}.MBR";
-            var clientPath = BuildQsysPath(downloadPath, lib, spf);
+            var clientPath = BuildLocalQsysPath(downloadPath, lib, spf);
             Console.WriteLine($"Downloading {srcPath}  => {clientPath}");
 
             using(KanpachiClient client = new KanpachiClient(Profile)){
@@ -45,13 +37,11 @@ namespace Kanpachi.Lib{
             }
         }
 
-        public void GetMemberList(string serverPath){
-            var splitPath = serverPath.ToUpper().Split('/');
-
-            // TODO: validate path with regex instead of this
-            if(splitPath.Length != 2){
-                throw new KanpachiFormatException("Expected source physical file path of format SRCPF/MBR");
+        public void GetMemberList(string qsysPath){
+            if(!RegexUtils.MatchSrcPfPath(qsysPath)){
+                throw new KanpachiFormatException("Expected source physical file path of format LIB/SRCPF");
             }
+            var splitPath = qsysPath.ToUpper().Split('/');
 
             using(KanpachiClient client = new KanpachiClient(Profile)){
                 client.Connect();
@@ -63,13 +53,11 @@ namespace Kanpachi.Lib{
             }
         }
 
-        public void GetSpf(string serverPath, string downloadPath){
-            var splitPath = serverPath.ToUpper().Split('/');
-
-            // TODO: validate path with regex instead of this
-            if(splitPath.Length != 2){
-                throw new KanpachiFormatException("Expected source physical file path of format SRCPF/MBR");
+        public void GetSpf(string qsysPath, string downloadPath){
+            if(!RegexUtils.MatchSrcPfPath(qsysPath)){
+                throw new KanpachiFormatException("Invalid QSYS path. Expected source physical file path of format LIB/SRCPF");
             }
+            var splitPath = qsysPath.ToUpper().Split('/');
             (string lib, string spf) = (splitPath[0], splitPath[1]);
 
             using(KanpachiClient client = new KanpachiClient(Profile)){
@@ -78,10 +66,10 @@ namespace Kanpachi.Lib{
                 var members = client.GetSrcMbrList(lib, spf);
 
                 foreach(SrcMbr mbr in members){
-                    var qsysPath = $"/QSYS.LIB/{lib}.LIB/{spf}.FILE/{mbr.Name}.MBR";
-                    var clientPath = BuildQsysPath(downloadPath, lib, spf);
-                    Console.WriteLine($"Downloading {qsysPath} to {clientPath}");
-                    mbr.Content = client.DownloadMember(qsysPath);
+                    var fullQsysPath = $"/QSYS.LIB/{lib}.LIB/{spf}.FILE/{mbr.Name}.MBR";
+                    var clientPath = BuildLocalQsysPath(downloadPath, lib, spf);
+                    Console.WriteLine($"Downloading {fullQsysPath} to {clientPath}");
+                    mbr.Content = client.DownloadMember(fullQsysPath);
 
                     // TODO: save metadata to JSON file, root of library
                     var outPath = Path.Combine(clientPath, $"{mbr.Name}.{mbr.Attribute}");
@@ -92,7 +80,9 @@ namespace Kanpachi.Lib{
 
         public void GetLibrary(string lib, string downloadPath){
             // TODO: validate path with regex
-
+            if(!RegexUtils.MatchIbmiObject(lib)){
+                throw new KanpachiFormatException("Invalid library name");
+            }
             using(KanpachiClient client = new KanpachiClient(Profile)){
                 client.Connect();
                 Library library = client.GetLibraryDetails(lib);
@@ -101,7 +91,7 @@ namespace Kanpachi.Lib{
                     foreach(SrcMbr mbr in client.GetSrcMbrList(lib, spf.Name)){
                         var qsysPath = $"/QSYS.LIB/{library.Name}.LIB/{spf.Name}.FILE/{mbr.Name}.MBR";
                         
-                        var clientPath = BuildQsysPath(downloadPath, library.Name, spf.Name);
+                        var clientPath = BuildLocalQsysPath(downloadPath, library.Name, spf.Name);
                         Console.WriteLine($"Downloading {qsysPath} to {clientPath}");
                         mbr.Content = client.DownloadMember(qsysPath);
 
@@ -127,8 +117,8 @@ namespace Kanpachi.Lib{
             return src;
         }
 
-        // build QSYS directory structure
-        private string BuildQsysPath(string clientPath, string lib, string spf){
+        // build local QSYS directory structure
+        private string BuildLocalQsysPath(string clientPath, string lib, string spf){
             string qsysPath = Path.Combine(BuildDownloadPath(clientPath), "QSYS", lib, spf);  
             if(!Directory.Exists(qsysPath)){
                 Directory.CreateDirectory(qsysPath);

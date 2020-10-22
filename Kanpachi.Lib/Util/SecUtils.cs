@@ -50,6 +50,10 @@ namespace Kanpachi.Lib{
             return DecryptAes(BuildPassphrase(profile), profile.Password);
         }
 
+        public static string DecryptAes(string passphrase, byte[] cipherCombined){
+            return DecryptAes(DeriveKey(passphrase), cipherCombined);
+        }
+
         public static string DecryptAes(string passphrase, string cipherCombined){
             return DecryptAes(DeriveKey(passphrase), Convert.FromBase64String(cipherCombined));
         }
@@ -82,8 +86,9 @@ namespace Kanpachi.Lib{
 
         // derive encryption key from passphrase and salt fed into PBKDF2
         public static byte[] DeriveKey(string passphrase){
+            var pbkdf2 = new Pbkdf2();
             byte[] salt = GenerateSalt();
-            return Convert.FromBase64String(Pbkdf2.Hash(passphrase, salt));
+            return Convert.FromBase64String(pbkdf2.Hash(passphrase, salt));
         }
 
         // generate salt based on current hardware
