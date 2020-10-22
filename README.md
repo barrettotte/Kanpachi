@@ -2,19 +2,16 @@
 
 A subpar CLI to interact with IBM i.
 
-**Unfortunately, I have only tested this out with my work's system.**
-**So, I'm positive there are issues I'm not aware of.**
+This has just been a little pet project I've been casually working on.
+I've only really tested it on my work's system with V7R3. 
+So, this might not work very well for other people.
 
 
 ## Features
-- Connection profiles for different systems.
+- Connection profiles for different systems/users.
 - Fetch files and directories from IFS.
 - Fetch libraries, source physical files, and source members from QSYS.
 - Execute CL, SQL, and shell commands.
-
-
-## Client Requirements
-- ODBC Driver for IBM i (Details in [Setup](##Setup))
 
 
 ## Host Requirements
@@ -25,21 +22,21 @@ A subpar CLI to interact with IBM i.
 
 ## Setup
 - **TODO:** Windows - [docs/setup-windows.md](docs/setup-windows.md)
-- Linux - [docs/setup-linux.md](docs/setup-linux.md)
+- **TODO** Linux - [docs/setup-linux.md](docs/setup-linux.md)
 - Mac - Sorry, nothing personal; I don't know a single thing about MacOS.
 
 
 ## Recommended VS Code Extensions
-- [IBMi Languages](https://marketplace.visualstudio.com/items?itemName=barrettotte.ibmi-languages) - My syntax highlighter for RPG/RPGLE, CL, DDS, and MI.
+- [IBMi Languages](https://marketplace.visualstudio.com/items?itemName=barrettotte.ibmi-languages) - My syntax highlighter for RPG, RPGLE, CL, DDS, and MI.
 
 
 ## Project Goals
 - [ ] Phase 1 - CLI commands to create profiles, fetch source, and execute commands (SQL, CL, shell)
-- [ ] Phase 2 - CLI commands to update source
-- [ ] Phase 3 - API over Kanpachi.LIB ??
+- [ ] Phase 2 - CLI commands to update source on IFS and QSYS
+- [ ] Phase 3 - API over Kanpachi.LIB
+- [ ] Phase 4 - VS Code extension (frontend) over Kanpachi.API (separate repository)
 
-After the API is written, I plan to make a VS Code extension as a frontend to the Kanpachi API in a separate repository.
-However, I'm only working on this project when I'm in the mood to. So, it might be awhile on a lot of this.
+I'm only working on this project when I'm in the mood to. So, it might be awhile on a lot of this, if at all.
 
 
 ## References
