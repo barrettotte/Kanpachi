@@ -119,12 +119,11 @@ namespace Kanpachi.Lib{
 
         // write QSYS metadata (TEXT, RECORDLEN, ATTRIBUTE, etc)
         private void WriteQsysMetadata(KanpachiClient client, string downloadPath, string lib, string spf, SrcMbr mbr){
+            Library library = null;
             var metadataPath = Path.Combine(ClientUtils.BuildDownloadPath(downloadPath, Profile), "QSYS", lib, $"{lib}.json");
-
+            
             if(File.Exists(metadataPath)){
                 // read existing metadata file for update
-                Library library = null;
-
                 using(StreamReader f = File.OpenText(metadataPath)){
                     library = (Library) new JsonSerializer().Deserialize(f, typeof(Library));
                     int idx = library.SrcPfs.FindIndex(x => x.Name == spf);
@@ -135,24 +134,19 @@ namespace Kanpachi.Lib{
                     }
                     library.SrcPfs[idx].Members.Add(mbr);
                 }
-                // update metadata file
-                using(StreamWriter f = File.CreateText(metadataPath)){
-                    f.Write(JsonConvert.SerializeObject(library, Formatting.Indented, new JsonSerializerSettings{
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    }));
-                }
             } else{
-                // create new metatadata file
-                using(StreamWriter f = File.CreateText(metadataPath)){
-                    Library library = client.GetLibraryDetails(lib);
-                    SrcPf srcPf = client.GetSrcPfDetails(lib, spf);
-                    srcPf.Members.Add(mbr);
-                    library.SrcPfs.Add(srcPf);
+                // library doesn't exist in metadata, setup new one
+                library = client.GetLibraryDetails(lib);
+                SrcPf srcPf = client.GetSrcPfDetails(lib, spf);
+                srcPf.Members.Add(mbr);
+                library.SrcPfs.Add(srcPf);
+            }
 
-                    f.Write(JsonConvert.SerializeObject(library, Formatting.Indented, new JsonSerializerSettings{
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    }));
-                }
+            // update metadata file
+            using(StreamWriter f = File.CreateText(metadataPath)){
+                f.Write(JsonConvert.SerializeObject(library, Formatting.Indented, new JsonSerializerSettings{
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                }));
             }
         }
 
