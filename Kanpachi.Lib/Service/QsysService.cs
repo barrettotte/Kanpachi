@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Kanpachi.Lib{
 
     public class QsysService: BaseService{
 
         public KanpachiProfile Profile {get;}
+
 
         public QsysService(KanpachiProfile profile){
             Profile = profile;
@@ -20,13 +23,14 @@ namespace Kanpachi.Lib{
             }
             var splitPath = qsysPath.ToUpper().Split('/');
             (string lib, string spf, string mbr) = (splitPath[0], splitPath[1], splitPath[2]);
-            
+
             var srcPath = $"/QSYS.LIB/{lib}.LIB/{spf}.FILE/{mbr}.MBR";
             var clientPath = BuildLocalQsysPath(downloadPath, lib, spf);
             Console.WriteLine($"Downloading {srcPath}  => {clientPath}");
 
             using(KanpachiClient client = new KanpachiClient(Profile)){
                 SrcMbr srcMbr = client.GetSrcMbrDetails(lib, spf, mbr);
+
                 DownloadSrcMbr(client, downloadPath, lib, spf, srcMbr);
             }
         }
@@ -113,10 +117,51 @@ namespace Kanpachi.Lib{
             return src;
         }
 
+        // write QSYS metadata (TEXT, RECORDLEN, ATTRIBUTE, etc)
+        private void WriteQsysMetadata(KanpachiClient client, string downloadPath, string lib, string spf, SrcMbr mbr){
+            var metadataPath = Path.Combine(ClientUtils.BuildDownloadPath(downloadPath, Profile), "QSYS", lib, $"{lib}.json");
+
+            if(File.Exists(metadataPath)){
+                // read existing metadata file for update
+                Library library = null;
+
+                using(StreamReader f = File.OpenText(metadataPath)){
+                    library = (Library) new JsonSerializer().Deserialize(f, typeof(Library));
+                    int idx = library.SrcPfs.FindIndex(x => x.Name == spf);
+
+                    if(idx == -1){
+                        library.SrcPfs.Add(client.GetSrcPfDetails(lib, spf));
+                        idx = library.SrcPfs.Count - 1;
+                    }
+                    library.SrcPfs[idx].Members.Add(mbr);
+                }
+                // update metadata file
+                using(StreamWriter f = File.CreateText(metadataPath)){
+                    f.Write(JsonConvert.SerializeObject(library, Formatting.Indented, new JsonSerializerSettings{
+                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                    }));
+                }
+            } else{
+                // create new metatadata file
+                using(StreamWriter f = File.CreateText(metadataPath)){
+                    Library library = client.GetLibraryDetails(lib);
+                    SrcPf srcPf = client.GetSrcPfDetails(lib, spf);
+                    srcPf.Members.Add(mbr);
+                    library.SrcPfs.Add(srcPf);
+
+                    f.Write(JsonConvert.SerializeObject(library, Formatting.Indented, new JsonSerializerSettings{
+                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                    }));
+                }
+            }
+        }
+
         // download source member and write to local file
         private void DownloadSrcMbr(KanpachiClient client, string downloadPath, string lib, string spf, SrcMbr srcMbr){
             var fullDownloadPath = BuildLocalQsysPath(downloadPath, lib, spf);
             var qsysPath = $"/QSYS.LIB/{lib}.LIB/{spf}.FILE/{srcMbr.Name}.MBR";
+
+            WriteQsysMetadata(client, downloadPath, lib, spf, srcMbr);
 
             Console.WriteLine($"Downloading {qsysPath} to {fullDownloadPath}");
             srcMbr.Content = client.DownloadMember(qsysPath);

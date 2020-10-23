@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace Kanpachi.Lib{
 
     public class SrcMbr : IbmiObject{
@@ -5,6 +7,8 @@ namespace Kanpachi.Lib{
         public string Attribute {get; set;}
         public int LineCount {get; set;}
         public int RecordLength {get; set;}
+
+        [JsonIgnore]
         public byte[] Content {get; set;} // actual source code
 
 
