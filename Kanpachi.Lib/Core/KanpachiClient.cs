@@ -140,7 +140,7 @@ namespace Kanpachi.Lib{
         // Get details of source member => type, size, record length, etc.
         public SrcMbr GetSrcMbrDetails(string lib, string spf, string mbr){
             var sqlString = $@"
-                select TABLE_PARTITION, SOURCE_TYPE, NUMBER_ROWS, coalesce(PARTITION_TEXT,''),
+                select TABLE_PARTITION, coalesce(SOURCE_TYPE,''), NUMBER_ROWS, coalesce(PARTITION_TEXT,''),
                   AVGROWSIZE, DATA_SIZE, CREATE_TIMESTAMP, LAST_CHANGE_TIMESTAMP
                 from QSYS2.SYSPARTITIONSTAT
                 where SYSTEM_TABLE_SCHEMA='{lib}' and SYSTEM_TABLE_NAME='{spf}' and TABLE_PARTITION='{mbr}'
@@ -201,7 +201,8 @@ namespace Kanpachi.Lib{
         public List<SrcMbr> GetSrcMbrList(string lib, string spf){
             var members = new List<SrcMbr>();
             var sqlString = $@"
-                select TABLE_PARTITION, coalesce(SOURCE_TYPE,''), NUMBER_ROWS, coalesce(PARTITION_TEXT,''), AVGROWSIZE
+                select TABLE_PARTITION, coalesce(SOURCE_TYPE,''), NUMBER_ROWS, coalesce(PARTITION_TEXT,''),
+                  AVGROWSIZE, DATA_SIZE, CREATE_TIMESTAMP, LAST_CHANGE_TIMESTAMP
                 from QSYS2.SYSPARTITIONSTAT
                 where SYSTEM_TABLE_SCHEMA='{lib}' and SYSTEM_TABLE_NAME='{spf}'
                 order by 1

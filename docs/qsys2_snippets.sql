@@ -62,6 +62,20 @@ where SYSTEM_TABLE_SCHEMA='BOLIB'
 ;
 
 
+select *
+from QSYS2.SYSPARTITIONSTAT
+where SYSTEM_TABLE_SCHEMA='BOLIB'
+  and SYSTEM_TABLE_NAME='QSQDSRC'
+;
+
+
+select count(*), SOURCE_TYPE
+from QSYS2.SYSPARTITIONSTAT
+where SYSTEM_TABLE_SCHEMA='BOLIB'
+group by rollup(SOURCE_TYPE)
+;
+
+
 -- Get columns of table
 select * 
 from QSYS2.SYSCOLUMNS

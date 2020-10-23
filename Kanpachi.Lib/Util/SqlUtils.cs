@@ -30,7 +30,10 @@ namespace Kanpachi.Lib{
             mbr.Attribute = reader.GetString(1).Trim();  // SOURCE_TYPE
             mbr.LineCount = reader.GetInt32(2);          // NUMBER_ROWS
             mbr.Text = reader.GetString(3).Trim();       // PARTITION_TEXT
-            mbr.RecordLength = reader.GetInt32(4) - 12;  // AVGROWSIZE  => Ex: RPG  92-12 = 80 columns
+            mbr.RecordLength = reader.GetInt32(4);       // AVGROWSIZE
+            mbr.DataSize = reader.GetInt32(5);           // DATA_SIZE
+            mbr.Created = reader.GetDateTime(6);         // CREATE_TIMESTAMP
+            mbr.Updated = reader.GetDateTime(7);         // LAST_CHANGE_TIMESTAMP
             return mbr;
         }
 

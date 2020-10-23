@@ -16,22 +16,20 @@ namespace Kanpachi.Lib{
             Profile = profile;
         }
 
-        // Download source member at LIB/SRCPF/MBR
-        public void GetMember(string qsysPath, string downloadPath){
-            if(!RegexUtils.MatchSrcMbrPath(qsysPath)){
-                throw new KanpachiFormatException("Expected source member path of format LIB/SRCPF/MBR.");
+        // Download entire library
+        public void GetLibrary(string lib, string downloadPath){
+            if(!RegexUtils.MatchIbmiObject(lib)){
+                throw new KanpachiFormatException("Invalid library name");
             }
-            var splitPath = qsysPath.ToUpper().Split('/');
-            (string lib, string spf, string mbr) = (splitPath[0], splitPath[1], splitPath[2]);
-
-            var srcPath = $"/QSYS.LIB/{lib}.LIB/{spf}.FILE/{mbr}.MBR";
-            var clientPath = BuildLocalQsysPath(downloadPath, lib, spf);
-            Console.WriteLine($"Downloading {srcPath}  => {clientPath}");
-
             using(KanpachiClient client = new KanpachiClient(Profile)){
-                SrcMbr srcMbr = client.GetSrcMbrDetails(lib, spf, mbr);
-
-                DownloadSrcMbr(client, downloadPath, lib, spf, srcMbr);
+                var spfs = client.GetSrcPfList(lib);
+                foreach(SrcPf spf in spfs){
+                    var members = client.GetSrcMbrList(lib, spf.Name);
+                    foreach(SrcMbr srcMbr in members){
+                        // TODO: progress output
+                        DownloadSrcMbr(client, downloadPath, lib, spf.Name, srcMbr);
+                    }
+                }
             }
         }
 
@@ -48,8 +46,26 @@ namespace Kanpachi.Lib{
                 var members = client.GetSrcMbrList(lib, spf);
 
                 foreach(SrcMbr srcMbr in members){
+                    // TODO: progress output
                     DownloadSrcMbr(client, downloadPath, lib, spf, srcMbr);
                 }
+            }
+        }
+
+        // Download source member at LIB/SRCPF/MBR
+        public void GetMember(string qsysPath, string downloadPath){
+            if(!RegexUtils.MatchSrcMbrPath(qsysPath)){
+                throw new KanpachiFormatException("Expected source member path of format LIB/SRCPF/MBR.");
+            }
+            var splitPath = qsysPath.ToUpper().Split('/');
+            (string lib, string spf, string mbr) = (splitPath[0], splitPath[1], splitPath[2]);
+
+            var srcPath = $"/QSYS.LIB/{lib}.LIB/{spf}.FILE/{mbr}.MBR";
+            var clientPath = BuildLocalQsysPath(downloadPath, lib, spf);
+
+            using(KanpachiClient client = new KanpachiClient(Profile)){
+                SrcMbr srcMbr = client.GetSrcMbrDetails(lib, spf, mbr);
+                DownloadSrcMbr(client, downloadPath, lib, spf, srcMbr);
             }
         }
 
@@ -89,24 +105,10 @@ namespace Kanpachi.Lib{
             }
         }
 
-        // Download entire library
-        public void GetLibrary(string lib, string downloadPath){
-            if(!RegexUtils.MatchIbmiObject(lib)){
-                throw new KanpachiFormatException("Invalid library name");
-            }
-            using(KanpachiClient client = new KanpachiClient(Profile)){
-                foreach(SrcPf spf in client.GetSrcPfList(lib)){
-                    foreach(SrcMbr srcMbr in client.GetSrcMbrList(lib, spf.Name)){
-                       DownloadSrcMbr(client, downloadPath, lib, spf.Name, srcMbr);
-                    }
-                }
-            }
-        }
-
         // split src member from byte array to records, based on record length of source physical file
         private List<string> SplitSrcMbr(SrcMbr srcMbr){
             List<string> src = new List<string>();
-            int rcdLen = srcMbr.RecordLength;
+            int rcdLen = srcMbr.RecordLength - 12; // Ex: RPG  92-12 = 80 columns
             byte[] record;
 
             for(int i = 0; i < srcMbr.Content.Length; i += rcdLen){
@@ -118,6 +120,9 @@ namespace Kanpachi.Lib{
         }
 
         // write QSYS metadata (TEXT, RECORDLEN, ATTRIBUTE, etc)
+        // TODO: switch to library metadata containing only SRCPFs (without members)
+        // TODO: metadata file per source physical file
+        // TODO: lookup common dotnet memory leaks...resets after source physical files switch over
         private void WriteQsysMetadata(KanpachiClient client, string downloadPath, string lib, string spf, SrcMbr mbr){
             Library library = null;
             var metadataPath = Path.Combine(ClientUtils.BuildDownloadPath(downloadPath, Profile), "QSYS", lib, $"{lib}.json");
@@ -126,13 +131,23 @@ namespace Kanpachi.Lib{
                 // read existing metadata file for update
                 using(StreamReader f = File.OpenText(metadataPath)){
                     library = (Library) new JsonSerializer().Deserialize(f, typeof(Library));
-                    int idx = library.SrcPfs.FindIndex(x => x.Name == spf);
+                    int spfIdx = library.SrcPfs.FindIndex(x => x.Name == spf);
 
-                    if(idx == -1){
+                    // source physical file not found in library metadata, so add it
+                    if(spfIdx == -1){
                         library.SrcPfs.Add(client.GetSrcPfDetails(lib, spf));
-                        idx = library.SrcPfs.Count - 1;
+                        spfIdx = library.SrcPfs.Count - 1;
                     }
-                    library.SrcPfs[idx].Members.Add(mbr);
+                    
+                    SrcPf srcPf = library.SrcPfs[spfIdx];
+                    int mbrIdx = srcPf.Members.FindIndex(x => x.Name == mbr.Name);
+
+                    // source member not found in source physical file metadata, so add it
+                    if(mbrIdx == -1){
+                        srcPf.Members.Add(mbr);
+                        mbrIdx = srcPf.Members.Count - 1;
+                    }
+                    library.SrcPfs[spfIdx].Members[mbrIdx] = mbr;
                 }
             } else{
                 // library doesn't exist in metadata, setup new one
@@ -152,15 +167,13 @@ namespace Kanpachi.Lib{
 
         // download source member and write to local file
         private void DownloadSrcMbr(KanpachiClient client, string downloadPath, string lib, string spf, SrcMbr srcMbr){
-            var fullDownloadPath = BuildLocalQsysPath(downloadPath, lib, spf);
+            var outPath = Path.Combine(BuildLocalQsysPath(downloadPath, lib, spf), $"{srcMbr.Name}.{srcMbr.Attribute}");
             var qsysPath = $"/QSYS.LIB/{lib}.LIB/{spf}.FILE/{srcMbr.Name}.MBR";
 
             WriteQsysMetadata(client, downloadPath, lib, spf, srcMbr);
+            Console.WriteLine($"Downloading {qsysPath} to {outPath}");
 
-            Console.WriteLine($"Downloading {qsysPath} to {fullDownloadPath}");
             srcMbr.Content = client.DownloadMember(qsysPath);
-
-            var outPath = Path.Combine(fullDownloadPath, $"{srcMbr.Name}.{srcMbr.Attribute}");
             File.WriteAllText(outPath, string.Join("\n", SplitSrcMbr(srcMbr)));
         }
 
