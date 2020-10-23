@@ -1,13 +1,13 @@
 ## Kanpachi
 
-A subpar CLI to interact with IBM i.
+A subpar CLI for interacting with IBM i.
 
-This has just been a little pet project I've been casually working on.
-I've only really tested it on my work's system with V7R3. 
+This has just been a little toy project I've been casually working on.
+I've only really tested it on my work's system with V7R3 and a bit on PUB400 with V7R4. 
 So, this might not work very well for other people.
 
 
-I'm sure someone could take some ideas from this and make something way better.
+I'm sure someone could take some ideas or snippets from this and make something way better.
 This definitely needs a lot more polishing.
 
 
@@ -19,9 +19,8 @@ This definitely needs a lot more polishing.
 
 
 ## Host Requirements
-- IBM i 7.3+ (```DSPSFWRSC``` to check OS version)
+- IBM i V7R3+ - ```DSPSFWRSC``` to check OS version.
 - User profile with home directory setup on IFS.
-- **TODO:** Check how things act if default shell not set to bash.
 
 
 ## Setup
@@ -41,6 +40,15 @@ This definitely needs a lot more polishing.
 - [ ] Phase 4 - VS Code extension (frontend) over Kanpachi.API (separate repository)
 
 I'm only working on this project when I'm in the mood to. So, it might be awhile on a lot of this, if at all.
+
+
+## Additional Ideas
+Stuff I was thinking about while developing, but haven't really started.
+
+- Run Kanpachi CLI interactively (would need to add exit command)
+- Generate markdown file for each library's QSYS metadata.
+- Command to update local QSYS files based off QSYS metadata updated timestamp. (like ```git pull```)
+- Command to download a spooled file or all spooled files for a job.
 
 
 ## References
