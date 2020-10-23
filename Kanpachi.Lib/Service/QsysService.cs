@@ -120,9 +120,6 @@ namespace Kanpachi.Lib{
         }
 
         // write QSYS metadata (TEXT, RECORDLEN, ATTRIBUTE, etc)
-        // TODO: switch to library metadata containing only SRCPFs (without members)
-        // TODO: metadata file per source physical file
-        // TODO: lookup common dotnet memory leaks...resets after source physical files switch over
         private void WriteQsysMetadata(KanpachiClient client, string downloadPath, string lib, string spf, SrcMbr mbr){
             Library library = null;
             var metadataPath = Path.Combine(ClientUtils.BuildDownloadPath(downloadPath, Profile), "QSYS", lib, $"{lib}.json");

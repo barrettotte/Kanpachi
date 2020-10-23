@@ -7,13 +7,14 @@ namespace Kanpachi.CLI{
 
         static void Main(string[] args){
             CmdParser cmdParser = new CmdParser();
-            try{
+            // try{
                 cmdParser.Parse(args);
-            } catch(KanpachiException e){
-                Console.WriteLine($"\nERROR(S):\n  {e.Message}");
-            } catch(Exception e){
-                Console.WriteLine($"\nUNEXPECTED ERROR(S):\n  {e.Message}\n{e.StackTrace}");
-            }
+            // } catch(KanpachiException e){
+            //     Console.WriteLine($"\nERROR(S):\n  {e.Message}");
+            //     Console.WriteLine(e.StackTrace);
+            // } catch(Exception e){
+            //     Console.WriteLine($"\nUNEXPECTED ERROR(S):\n  {e.Message}\n{e.StackTrace}");
+            // }
         }
     }
 }

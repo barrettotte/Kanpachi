@@ -14,7 +14,7 @@ namespace Kanpachi.CLI{
         [Value(0, HelpText="Absolute path to directory on IFS.", Required=true)]
         public string ServerPath {get; set;}
 
-        [Value(1, HelpText="Path to download directory to.", Required=true)]
+        [Value(1, HelpText="Path to download directory to.")]
         public string ClientPath {get; set;}
     }
 
@@ -23,13 +23,13 @@ namespace Kanpachi.CLI{
         [Value(0, HelpText="Absolute path to file on IFS.", Required=true)]
         public string ServerPath {get; set;}
 
-        [Value(1, HelpText="Path to download file to.", Required=true)]
+        [Value(1, HelpText="Path to download file to.")]
         public string ClientPath {get; set;}
     }
 
     [Verb("ls", HelpText="List contents of directory on IFS.")]
     class IfsLs : BaseCmd{
-        [Value(0, HelpText="Absolute path to directory on IFS.", Required=true)]
+        [Value(0, HelpText="Absolute path to directory on IFS.")]
         public string ServerPath {get; set;}
     }
 

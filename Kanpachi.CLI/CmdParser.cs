@@ -33,12 +33,18 @@ namespace Kanpachi.CLI{
         }
 
         private void ParseIfsCmd(IfsCmd baseCmd){
+            var profile = profileService.GetActiveProfile();
+            if(profile == null){
+                throw new KanpachiProfileException("No active profile set.");
+            }
+            var ifsService = new IfsService(profile);
             var parser = new Parser(with => with.HelpWriter = null);
             var parserResult = parser.ParseArguments<IfsGetDir, IfsGetFile, IfsLs>(baseCmd.SubArgs);
+
             parserResult
-                .WithParsed<IfsGetDir>(x => Console.WriteLine($"IFS get directory"))
-                .WithParsed<IfsGetFile>(x => Console.WriteLine($"IFS get file"))
-                .WithParsed<IfsLs>(x => Console.WriteLine($"IFS list"))
+                .WithParsed<IfsGetDir>(args => ifsService.GetDirectory(args.ServerPath, args.ClientPath))
+                .WithParsed<IfsGetFile>(args => ifsService.GetFile(args.ServerPath, args.ClientPath))
+                .WithParsed<IfsLs>(args => ifsService.ListDirectory(args.ServerPath))
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }
 
@@ -61,9 +67,9 @@ namespace Kanpachi.CLI{
                 throw new KanpachiProfileException("No active profile set.");
             }
             var qsysService = new QsysService(profile);
-
             var parser = new Parser(with => with.HelpWriter = null);
             var parserResult = parser.ParseArguments<QsysGetLib, QsysGetMbr, QsysGetSpf, QsysLsLib, QsysLsSpf>(baseCmd.SubArgs);
+
             parserResult
                 .WithParsed<QsysGetLib>(args => qsysService.GetLibrary(args.ServerPath, args.ClientPath))
                 .WithParsed<QsysGetMbr>(args => qsysService.GetMember(args.ServerPath, args.ClientPath))

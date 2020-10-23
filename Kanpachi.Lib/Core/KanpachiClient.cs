@@ -4,6 +4,7 @@ using System.Data.Odbc;
 using System.Text;
 using System.Threading;
 using Renci.SshNet;
+using Renci.SshNet.Sftp;
 
 namespace Kanpachi.Lib{
 
@@ -13,6 +14,8 @@ namespace Kanpachi.Lib{
         public SshClient SshClient {get;}
         public SftpClient SftpClient {get;}
         public OdbcConnection Db2Client {get;}
+
+        private string IfsCache {get;}
 
 
         public KanpachiClient(KanpachiProfile profile){
@@ -29,6 +32,7 @@ namespace Kanpachi.Lib{
             Db2Client = new OdbcConnection(connStr);
             Db2Client.ConnectionTimeout = (int) Math.Round(profile.Timeout);
 
+            IfsCache = $"{Profile.IfsUserPath}/.kanpachi";
             Connect();
         }
 
@@ -44,10 +48,10 @@ namespace Kanpachi.Lib{
             Db2Client.Open();
             Console.Write("DB2...");
             Console.WriteLine("Connected.");
-
-            if(!SftpClient.Exists(Profile.IfsCachePath)){
-                Console.WriteLine($"Creating IFS cache at {Profile.IfsCachePath}.");
-                ExecCmd($"mkdir -p \"{Profile.IfsCachePath}\""); // swap out for SQL QCMDEXC?
+    
+            if(!SftpClient.Exists(IfsCache)){
+                Console.WriteLine($"Creating IFS cache at {IfsCache}.");
+                ExecCmd($"mkdir -p \"{IfsCache}\""); // swap out for SQL QCMDEXC?
             }
         }
 
@@ -84,6 +88,24 @@ namespace Kanpachi.Lib{
                     SqlUtils.DisplayRows(dbReader);
                 }
             }
+        }
+
+        // list contents of directory in IFS
+        public List<SftpFile> ListDirectory(string dirPath){
+            try{
+                return SftpClient.ListDirectory(dirPath) as List<SftpFile>;
+            } catch(Exception e){
+                throw new KanpachiSftpException($"Error occurred listing contents of {dirPath}\n\t{e.Message}");
+            }
+        }
+
+        // download a file from IFS
+        public byte[] DownloadFile(string filePath){
+            // try{
+                return SftpClient.ReadAllBytes(filePath);
+            // } catch(Exception e){
+            //     throw new KanpachiSftpException($"Error occurred downloading file at {filePath}\n\t{e.Message}");
+            // }
         }
 
         // download a source member from QSYS

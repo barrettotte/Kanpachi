@@ -20,7 +20,7 @@ namespace Kanpachi.Lib{
         public string DefaultEncoding {get; set;}    //
 
         public string DownloadPath {get; set;}       // client directory to download to
-        public string IfsCachePath {get; set;}       // path to directory on IFS for temporary caching
+        public string IfsUserPath {get; set;}        // path to user's home directory on IFS
 
 
         public KanpachiProfile(){
@@ -39,7 +39,7 @@ namespace Kanpachi.Lib{
             Timeout = KanpachiDefaults.Timeout;
             DefaultEncoding = KanpachiDefaults.DefaultEncoding;
 
-            IfsCachePath = $"/home/{user}/.kanpachi";
+            IfsUserPath = $"/home/{User}";
         }
     }
 }
