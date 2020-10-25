@@ -101,11 +101,11 @@ namespace Kanpachi.Lib{
 
         // download a file from IFS
         public byte[] DownloadFile(string filePath){
-            // try{
+            try{
                 return SftpClient.ReadAllBytes(filePath);
-            // } catch(Exception e){
-            //     throw new KanpachiSftpException($"Error occurred downloading file at {filePath}\n\t{e.Message}");
-            // }
+            } catch(Exception e){
+                throw new KanpachiSftpException($"Error occurred downloading file at {filePath}\n\t{e.Message}");
+            }
         }
 
         // download a source member from QSYS
