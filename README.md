@@ -23,9 +23,14 @@ This definitely needs a lot more polishing.
 - User profile with home directory setup on IFS.
 
 
+## Client Requirements
+- .NET Core runtime
+- ODBC driver for IBM i
+
+
 ## Setup
-- **TODO:** Windows - [docs/setup-windows.md](docs/setup-windows.md)
-- **TODO** Linux - [docs/setup-linux.md](docs/setup-linux.md)
+- Windows - [docs/setup-windows.md](docs/setup-windows.md)
+- Linux - [docs/setup-linux.md](docs/setup-linux.md)
 - Mac - Sorry, nothing personal; I don't know a single thing about MacOS.
 
 
