@@ -56,7 +56,7 @@ Complete command documentation in [docs/CLI-Docs.md](docs/CLI-Docs.md)
 
 
 ## Project Goals
-- [ ] Phase 1 - CLI commands to create profiles, fetch source, and execute commands (SQL, CL, shell)
+- [x] Phase 1 - CLI commands to create profiles, fetch source, and execute commands (SQL, CL, shell)
 - [ ] Phase 2 - CLI commands to update source on IFS and QSYS
 - [ ] Phase 3 - API over Kanpachi.LIB
 - [ ] Phase 4 - VS Code extension (frontend) over Kanpachi.API (separate repository)
