@@ -49,14 +49,6 @@ namespace Kanpachi.Lib{
                 GetDirectoryRecursively(client, serverPath, outPath);
             }
         }
-        /*
-        Console.WriteLine($"Downloading {serverPath} to {outPath}");
-                foreach(SftpFile f in client.ListDirectory(serverPath)){
-                    if(f.IsDirectory){
-                        
-                    }
-                }
-                */
 
         // download each file and directory recursively from IFS
         private void GetDirectoryRecursively(KanpachiClient client, string serverPath, string outPath){

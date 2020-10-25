@@ -9,6 +9,14 @@ namespace Kanpachi.CLI{
 
         private ProfileService profileService;
 
+        private KanpachiProfile GetActiveProfile(){
+            var profile = profileService.GetActiveProfile();
+            if(profile == null){
+                throw new KanpachiProfileException("No active profile set.");
+            }
+            return profile;
+        }
+
         // TODO: this is gross, refactor it to something...
 
         private void ParseConfigCmd(ConfigCmd baseCmd){
@@ -23,21 +31,18 @@ namespace Kanpachi.CLI{
         }
 
         private void ParseExecCmd(ExecCmd baseCmd){
+            var execService = new ExecService(GetActiveProfile());
             var parser = new Parser(with => with.HelpWriter = null);
             var parserResult = parser.ParseArguments<ExecCl, ExecShell, ExecSql>(baseCmd.SubArgs);
             parserResult
-                .WithParsed<ExecCl>(x => Console.WriteLine($"Execute CL"))
-                .WithParsed<ExecShell>(x => Console.WriteLine($"Execute Shell"))
-                .WithParsed<ExecSql>(x => Console.WriteLine($"Execute SQL"))
+                .WithParsed<ExecCl>(args => execService.ExecCL(args.ClCmd))
+                .WithParsed<ExecShell>(args => execService.ExecShell(args.ShellCmd))
+                .WithParsed<ExecSql>(args => execService.ExecSql(args.SqlCmd))
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }
 
         private void ParseIfsCmd(IfsCmd baseCmd){
-            var profile = profileService.GetActiveProfile();
-            if(profile == null){
-                throw new KanpachiProfileException("No active profile set.");
-            }
-            var ifsService = new IfsService(profile);
+            var ifsService = new IfsService(GetActiveProfile());
             var parser = new Parser(with => with.HelpWriter = null);
             var parserResult = parser.ParseArguments<IfsGetDir, IfsGetFile, IfsLs>(baseCmd.SubArgs);
 
@@ -60,13 +65,8 @@ namespace Kanpachi.CLI{
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }
 
-        // TODO: slow because of decryption...
         private void ParseQsysCmd(QsysCmd baseCmd){
-            var profile = profileService.GetActiveProfile();
-            if(profile == null){
-                throw new KanpachiProfileException("No active profile set.");
-            }
-            var qsysService = new QsysService(profile);
+            var qsysService = new QsysService(GetActiveProfile());
             var parser = new Parser(with => with.HelpWriter = null);
             var parserResult = parser.ParseArguments<QsysGetLib, QsysGetMbr, QsysGetSpf, QsysLsLib, QsysLsSpf>(baseCmd.SubArgs);
 
@@ -102,9 +102,5 @@ namespace Kanpachi.CLI{
                 .WithParsed<QsysCmd>(x => ParseQsysCmd(x))
             ;
         }
-
-        // TODO: Decide on having an interactive option
-        //   - prompt once for password, use it multiple times in memory for interactive session
-        //   - this is a middle ground between prompt for password and storing encrypted locally
     }
 }

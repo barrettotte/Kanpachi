@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Odbc;
 using System.Text;
 using System.Threading;
@@ -28,7 +29,7 @@ namespace Kanpachi.Lib{
             SftpClient.ConnectionInfo.Timeout = TimeSpan.FromSeconds(profile.Timeout);
 
             string connStr = "Driver={IBM i Access ODBC Driver};" +
-                $"System={profile.Host};Uid={profile.User};Pwd={profile.PasswordDecrypted};";
+                $"System={profile.Host};Uid={profile.User};Pwd={profile.PasswordDecrypted};NAM=1;DBQ=,*USRLIBL;";
             Db2Client = new OdbcConnection(connStr);
             Db2Client.ConnectionTimeout = (int) Math.Round(profile.Timeout);
 
@@ -51,42 +52,41 @@ namespace Kanpachi.Lib{
     
             if(!SftpClient.Exists(IfsCache)){
                 Console.WriteLine($"Creating IFS cache at {IfsCache}.");
-                ExecCmd($"mkdir -p \"{IfsCache}\""); // swap out for SQL QCMDEXC?
+                ExecShell($"mkdir -p \"{IfsCache}\""); // swap out for SQL QCMDEXC?
             }
         }
 
         // Execute a CL command
         public CmdResponse ExecCL(string clString){
-            return ExecCmd($"system \"{clString}\"");
+            return ExecShell($"system \"{clString}\"");
         }
 
-        // Execute a command
-        public CmdResponse ExecCmd(string cmdString){
-            Console.WriteLine(cmdString);
-
-            SshCommand cmd = SshClient.CreateCommand(cmdString);
+        // Execute a shell command
+        public CmdResponse ExecShell(string shellString){
+            SshCommand cmd = SshClient.CreateCommand(shellString);
             IAsyncResult task = cmd.BeginExecute();
+            Console.WriteLine(shellString);
 
             while(!task.IsCompleted){
                 Thread.Sleep(500);
             }
-            // TODO: add max timeout on command
-            // TODO: check if command success, throw CommandException
-            CmdResponse response = new CmdResponse(cmd.ExitStatus, cmd.Error, cmd.Result);
+            CmdResponse response = new CmdResponse(shellString, cmd.ExitStatus, cmd.Error, cmd.Result);
             cmd.EndExecute(task);
 
             return response;
         }
 
-        // execute DB2 SQL command  TODO: not finished
-        public void ExecSQL(string sqlString){
+        // execute DB2 SQL command
+        public DataTable ExecSQL(string sqlString){
             using(var sqlCmd = Db2Client.CreateCommand()){
                 sqlCmd.CommandText = sqlString;
                 Console.WriteLine(sqlCmd.CommandText + '\n');
 
+                DataTable tbl = new DataTable();
                 using(var dbReader = sqlCmd.ExecuteReader()){
-                    SqlUtils.DisplayRows(dbReader);
+                    tbl.Load(dbReader);
                 }
+                return tbl;
             }
         }
 
