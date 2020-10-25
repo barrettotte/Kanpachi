@@ -1,3 +1,4 @@
+using System.Text;
 using Newtonsoft.Json;
 
 namespace Kanpachi.Lib{
@@ -17,10 +18,11 @@ namespace Kanpachi.Lib{
         public int Port {get; set;}
         public double Timeout {get; set;}            // time in seconds before timeout.
         public int ConnectAttempts {get; set;}       // number of times to attempt if connection failed
-        public string DefaultEncoding {get; set;}    //
 
         public string DownloadPath {get; set;}       // client directory to download to
         public string IfsUserPath {get; set;}        // path to user's home directory on IFS
+
+        public string OdbcDriver {get; set;}         // name of ODBC driver
 
 
         public KanpachiProfile(){
@@ -33,13 +35,13 @@ namespace Kanpachi.Lib{
 
             Host = host;
             User = user;
-            
-            Port = KanpachiDefaults.SshPort;
-            ConnectAttempts = KanpachiDefaults.ConnectAttempts;
-            Timeout = KanpachiDefaults.Timeout;
-            DefaultEncoding = KanpachiDefaults.DefaultEncoding;
+
+            Port = 22;
+            ConnectAttempts = 5;
+            Timeout = 25.0;
 
             IfsUserPath = $"/home/{User}";
+            OdbcDriver = "IBM i Access ODBC Driver";
         }
     }
 }

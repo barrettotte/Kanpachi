@@ -92,6 +92,18 @@ Example: ```kanpachi profile set_active MY400DEV```
 
 <br>
 
+**Set value on active profile** - ```profile set KEY VALUE```
+
+Example: ```kanpachi profile set port 2222```
+
+<br>
+
+**Get value from active profile** - ```profile get KEY```
+
+Example: ```kanpachi profile get host```
+
+<br>
+
 
 ## Qsys Command Group
 If optional argument ```OUT_PATH``` is not specified, downloads are placed in current working directory.

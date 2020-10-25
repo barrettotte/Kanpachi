@@ -44,20 +44,24 @@ namespace Kanpachi.CLI{
 
         private void ParseProfileCmd(ProfileCmd baseCmd){
             var parser = new Parser(with => with.HelpWriter = null);
-            var parserResult = parser.ParseArguments<ProfileAdd, ProfileRm, ProfileLs, GetProfileActive, SetProfileActive>(baseCmd.SubArgs);
+            var parserResult = parser
+                .ParseArguments<ProfileAdd, ProfileRm, ProfileLs, GetProfileActive, SetProfileActive, ProfileSetValue, ProfileGetValue>(baseCmd.SubArgs);
             parserResult
                 .WithParsed<ProfileAdd>(args => profileService.AddProfile(args.Profile))
                 .WithParsed<ProfileLs>(_ => profileService.ListProfiles())
                 .WithParsed<ProfileRm>(args => profileService.RemoveProfile(args.Profile))
                 .WithParsed<GetProfileActive>(args => Console.WriteLine(profileService.GetActiveProfile(true).Name))
                 .WithParsed<SetProfileActive>(args => profileService.SetActiveProfile(args.Profile))
+                .WithParsed<ProfileSetValue>(args => profileService.SetValue(args.Key, args.Value))
+                .WithParsed<ProfileGetValue>(args => profileService.GetValue(args.Key))
                 .WithNotParsed(_ => WriteHelpText(parserResult));
         }
 
         private void ParseQsysCmd(QsysCmd baseCmd){
             var qsysService = new QsysService(GetActiveProfile());
             var parser = new Parser(with => with.HelpWriter = null);
-            var parserResult = parser.ParseArguments<QsysGetLib, QsysGetMbr, QsysGetSpf, QsysLsLib, QsysLsSpf>(baseCmd.SubArgs);
+            var parserResult = parser
+                .ParseArguments<QsysGetLib, QsysGetMbr, QsysGetSpf, QsysLsLib, QsysLsSpf>(baseCmd.SubArgs);
 
             parserResult
                 .WithParsed<QsysGetLib>(args => qsysService.GetLibrary(args.ServerPath, args.ClientPath))

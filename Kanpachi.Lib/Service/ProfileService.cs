@@ -108,6 +108,91 @@ namespace Kanpachi.Lib{
             Console.WriteLine($"Set active profile to {nextActive}");
         }
 
+        // set profile value
+        public void SetValue(string key, string value){
+            KanpachiProfile original = GetActiveProfile();
+            KanpachiProfile updated = ClientUtils.CopyProfile(original);
+            // skip Name
+            switch(key.ToUpper()){
+                case "HOST":
+                    updated.Host = value;
+                    break;
+                case "USER":
+                    updated.User = value;
+                    break;
+                case "PASSWORD":
+                    updated.PasswordDecrypted = value;
+                    break;
+                case "PORT":
+                    int parsePort;
+                    if(!Int32.TryParse(value, out parsePort)){
+                        throw new KanpachiConfigException($"Could not parse value {value} to Int32.");
+                    }
+                    updated.Port = parsePort;
+                    break;
+                case "TIMEOUT":
+                    double parseTimeout;
+                    if(!Double.TryParse(value, out parseTimeout)){
+                        throw new KanpachiConfigException($"Could not parse value {value} to Double.");
+                    }
+                    updated.Timeout = Double.Parse(value);
+                    break;
+                case "CONNECTATTEMPTS":
+                    int parseConnectAttempts;
+                    if(!Int32.TryParse(value, out parseConnectAttempts)){
+                        throw new KanpachiConfigException($"Could not parse value {value} to Int32.");
+                    }
+                    updated.Port = parseConnectAttempts;
+                    break;
+                case "IFSUSERPATH":
+                    updated.IfsUserPath = value;
+                    break;
+                case "ODBCDRIVER":
+                    updated.OdbcDriver = value;
+                    break;
+                default:
+                    throw new KanpachiConfigException("Could not find key {key}");
+            }
+            WriteProfile(updated);
+        }
+
+        // get connection profile value
+        public void GetValue(string key){
+            KanpachiProfile active = GetActiveProfile(true);
+            string v = string.Empty;
+
+            // Skip password
+            switch (key.ToUpper()){
+                case "NAME":
+                    v = active.Name;
+                    break;
+                case "HOST":
+                    v = active.Host;
+                    break;
+                case "USER":
+                    v = active.User;
+                    break;
+                case "PORT":
+                    v = active.Port.ToString();
+                    break;
+                case "TIMEOUT":
+                    v = active.Timeout.ToString();
+                    break;
+                case "CONNECTATTEMPTS":
+                    v = active.ConnectAttempts.ToString();
+                    break;
+                case "IFSUSERPATH":
+                    v = active.IfsUserPath;
+                    break;
+                case "ODBCDRIVER":
+                    v = active.OdbcDriver;
+                    break;
+                default: 
+                    throw new KanpachiConfigException("Could not find key {key}");
+            }
+            Console.WriteLine(v);
+        }
+
         // Write profile to json file
         public void WriteProfile(KanpachiProfile profile){
             if(!Directory.Exists(ProfilesPath)){

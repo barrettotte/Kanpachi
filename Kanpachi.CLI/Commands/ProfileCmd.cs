@@ -36,4 +36,19 @@ namespace Kanpachi.CLI{
         [Value(0, HelpText="Name of profile.", Required=true)]
         public string Profile {get; set;}
     }
+
+    [Verb("set", HelpText="Set profile value.")]
+    class ProfileSetValue: BaseCmd{
+        [Value(0, HelpText="Key to set.", Required=true)]
+        public string Key {get; set;}
+
+        [Value(1, HelpText="Value.", Required=true)]
+        public string Value {get; set;}
+    }
+
+    [Verb("get", HelpText="Get profile value.")]
+    class ProfileGetValue: BaseCmd{
+        [Value(0, HelpText="Key to get.", Required=true)]
+        public string Key {get; set;}
+    }
 }

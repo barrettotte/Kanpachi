@@ -106,5 +106,21 @@ namespace Kanpachi.Lib{
             }
             return clientPath;
         }
+
+        public static KanpachiProfile CopyProfile(KanpachiProfile profile){
+            var copy = new KanpachiProfile();
+            copy.Name = profile.Name;
+            copy.Host = profile.Host;
+            copy.User = profile.User;
+            copy.Password = profile.Password;
+            copy.PasswordDecrypted = profile.PasswordDecrypted;
+            copy.Port = profile.Port;
+            copy.Timeout = profile.Timeout;
+            copy.ConnectAttempts = profile.ConnectAttempts;
+            copy.DownloadPath = profile.DownloadPath;
+            copy.IfsUserPath = profile.IfsUserPath;
+            copy.OdbcDriver = profile.OdbcDriver;
+            return copy;
+        }
     }
 }

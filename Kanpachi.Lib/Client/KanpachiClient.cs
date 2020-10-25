@@ -28,7 +28,7 @@ namespace Kanpachi.Lib{
             SftpClient = new SftpClient(profile.Host, profile.Port, profile.User, profile.PasswordDecrypted);
             SftpClient.ConnectionInfo.Timeout = TimeSpan.FromSeconds(profile.Timeout);
 
-            string connStr = "Driver={IBM i Access ODBC Driver};" +
+            string connStr = "Driver={" + profile.OdbcDriver + "};" +
                 $"System={profile.Host};Uid={profile.User};Pwd={profile.PasswordDecrypted};NAM=1;DBQ=,*USRLIBL;";
             Db2Client = new OdbcConnection(connStr);
             Db2Client.ConnectionTimeout = (int) Math.Round(profile.Timeout);
