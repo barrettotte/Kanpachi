@@ -53,12 +53,13 @@ namespace Kanpachi.Lib{
 
         // List profiles present in local cache
         public void ListProfiles(){
+            Console.WriteLine($"Profile configurations located at {ProfilesPath}\n");
+
             foreach(var f in Directory.GetFiles(ProfilesPath, "*.json")){
                 string[] splitPath = f.Split(Path.DirectorySeparatorChar);
                 KanpachiProfile profile = ReadProfile(splitPath[splitPath.Length-1].Split('.')[0]);
-
                 Console.WriteLine((profile.IsActive ? "*": "") + $"{profile.Name}");
-            }
+            }            
         }
 
         // Remove profile from local cache

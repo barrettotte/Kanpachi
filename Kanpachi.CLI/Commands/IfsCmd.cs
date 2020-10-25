@@ -32,6 +32,4 @@ namespace Kanpachi.CLI{
         [Value(0, HelpText="Absolute path to directory on IFS.")]
         public string ServerPath {get; set;}
     }
-
-    // TODO: help command
 }

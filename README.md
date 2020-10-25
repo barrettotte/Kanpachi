@@ -29,6 +29,23 @@ This definitely needs a lot more polishing.
 - Mac - Sorry, nothing personal; I don't know a single thing about MacOS.
 
 
+## Command Documentation
+Here are a few sample commands to show some basic functionality.
+
+- ```kanpachi profile add MY400``` - create new profile
+- ```kanpachi profile ls``` - list profiles
+- ```kanpachi qsys get_mbr BOLIB/QRPGLESRC/IFSREAD ./rpgle``` - Download source member
+- ```kanpachi qsys get_spf BOLIB/QRPGLESRC ./rpgle``` - Download source members in BOLIB/QRPGLESRC
+- ```kanpachi qsys get_lib BOLIB``` - download all source physical files from BOLIB
+- ```kanpachi ifs ls /home/OTTEB/``` - list directory contents of /home/OTTEB
+- ```kanpachi ifs get_dir /home/OTTEB/RPG-BF``` - download directory /home/OTTEB/RPG-BF (to current working directory)
+- ```kanpachi exec cl "DSPLIBL"``` - execute CL command
+- ```kanpachi exec sh "ls"``` - execute shell command
+- ```kanpachi exec sql "select SYSTEM_SCHEMA_NAME from QSYS2.SYSSCHEMAS limit 25``` - execute SQL command
+
+Complete command documentation in [docs/CLI-Docs.md](docs/CLI-Docs.md)
+
+
 ## Recommended VS Code Extensions
 - [IBMi Languages](https://marketplace.visualstudio.com/items?itemName=barrettotte.ibmi-languages) - My syntax highlighter for RPG, RPGLE, CL, DDS, and MI.
 

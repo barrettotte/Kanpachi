@@ -19,17 +19,6 @@ namespace Kanpachi.CLI{
 
         // TODO: this is gross, refactor it to something...
 
-        private void ParseConfigCmd(ConfigCmd baseCmd){
-            var parser = new Parser(with => with.HelpWriter = null);
-            var parserResult = parser.ParseArguments<ConfigGet, ConfigSet, ConfigLs, ConfigReset>(baseCmd.SubArgs);
-            parserResult
-                .WithParsed<ConfigGet>(x => Console.WriteLine($"Get config['{x.Key}']"))
-                .WithParsed<ConfigLs>(x => Console.WriteLine($"list config"))
-                .WithParsed<ConfigReset>(x => Console.WriteLine($"reset config['{x.Key}']"))
-                .WithParsed<ConfigSet>(x => Console.WriteLine($"Set config['{x.Key}'] = '{x.Value}'"))
-                .WithNotParsed(_ => WriteHelpText(parserResult));
-        }
-
         private void ParseExecCmd(ExecCmd baseCmd){
             var execService = new ExecService(GetActiveProfile());
             var parser = new Parser(with => with.HelpWriter = null);
@@ -94,8 +83,7 @@ namespace Kanpachi.CLI{
         public void Parse(string[] args){
             profileService = new ProfileService();
 
-            Parser.Default.ParseArguments<ConfigCmd, ExecCmd, IfsCmd, ProfileCmd, QsysCmd>(args)
-                .WithParsed<ConfigCmd>(x => ParseConfigCmd(x))
+            Parser.Default.ParseArguments<ExecCmd, IfsCmd, ProfileCmd, QsysCmd>(args)
                 .WithParsed<ExecCmd>(x => ParseExecCmd(x))
                 .WithParsed<IfsCmd>(x => ParseIfsCmd(x))
                 .WithParsed<ProfileCmd>(x => ParseProfileCmd(x))

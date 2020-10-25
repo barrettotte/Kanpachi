@@ -36,6 +36,4 @@ namespace Kanpachi.CLI{
         [Value(0, HelpText="Name of profile.", Required=true)]
         public string Profile {get; set;}
     }
-
-    // TODO: help command
 }
