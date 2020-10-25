@@ -15,6 +15,7 @@ Documentation formatting loosely based on https://developers.google.com/style/co
 ## Exec Command Group
 For each ```exec``` command, use quotation marks to enclose a command with spaces.
 
+<br>
 
 **Execute a CL command** - ```cl CL_STRING```
 
@@ -37,6 +38,8 @@ Example: ```kanpachi exec sql "select SYSTEM_SCHEMA_NAME from QSYS2.SYSSCHEMAS l
 
 ## IFS Command Group
 If optional argument ```OUT_PATH``` is not specified, downloads are placed in current working directory.
+
+<br>
 
 **Download a directory from IFS** - ```get_dir IFS_PATH [OUT_PATH]```
 
@@ -93,6 +96,7 @@ Example: ```kanpachi profile set_active MY400DEV```
 ## Qsys Command Group
 If optional argument ```OUT_PATH``` is not specified, downloads are placed in current working directory.
 
+<br>
 
 **Download a library** - ```get_lib QSYS_PATH [OUT_PATH]```
 
